@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1C1E21">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Hoja de ruta · Tesoro Eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#1C1E21;--p1:#25282C;--p2:#2F3337;--ln:#3B4046;--tx:#ECEDEE;--mu:#9AA0A6;
+  --lime:#C3D118;--amb:#E8A33D;--red:#F0575C;
+  --fd:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  --fb:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:16px;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--ln);padding-top:env(safe-area-inset-top,0px)}
+.bar{display:flex;align-items:center;gap:8px;min-height:56px}
+.brand{font-family:var(--fd);font-weight:700;font-size:24px;letter-spacing:.4px;color:var(--lime);flex:1}
+.brand small{display:block;font-family:var(--fb);font-weight:500;font-size:12px;color:var(--mu);letter-spacing:0}
+h1.t{font-family:var(--fd);font-weight:700;font-size:23px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon{background:none;border:0;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--tx);font-size:20px;cursor:pointer}
+.icon:active{background:var(--p2)}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding:0 10px 8px;max-width:760px;margin:0 auto}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;background:none;border:0;color:var(--mu);font-weight:600;font-size:15px;padding:7px 13px;border-radius:999px;cursor:pointer}
+.tabs button.on{background:var(--lime);color:#1C1E21}
+main{padding-top:16px}
+h2{font-family:var(--fd);font-weight:700;font-size:21px;margin:22px 0 10px}
+h2:first-child{margin-top:4px}
+.hint{color:var(--mu);font-size:14px;line-height:1.4;margin:-4px 0 12px}
+.field{display:block;margin-bottom:12px}
+.field>span{display:block;font-size:13px;color:var(--mu);margin-bottom:5px}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;background:var(--p1);border:1px solid var(--ln);border-radius:9px;padding:11px 12px;outline:none}
+textarea{min-height:110px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{border-color:var(--lime)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:600;cursor:pointer;background:var(--p2);color:var(--tx)}
+.btn.pri{background:var(--lime);color:#1C1E21}
+.btn.sm{padding:8px 12px;font-size:14px}
+.btn.danger{background:none;color:var(--red);border:1px solid #5a3033}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card{background:var(--p1);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:12px}
+.evcard{display:block;width:100%;text-align:left;cursor:pointer}
+.evcard .n{font-family:var(--fd);font-weight:700;font-size:22px}
+.evcard .m{color:var(--mu);font-size:14px;margin-top:2px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;margin-top:8px}
+.pill.amb{background:#4a3a1c;color:var(--amb)}
+.pill.ok{background:#39401a;color:var(--lime)}
+.pend{border-left:3px solid var(--amb);background:#2b2720;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:14px}
+.pend b{color:var(--amb)}
+.pend ul{margin:6px 0 0;padding-left:18px;color:#d8d2c4}
+.lrow{display:grid;grid-template-columns:1fr 96px;gap:6px;margin-bottom:6px}
+.lrow .tx{grid-column:1/-1}
+.lrow .x{grid-column:1/-1;display:flex;gap:6px;align-items:center;justify-content:space-between;font-size:13px;color:var(--mu)}
+.chk{display:flex;align-items:center;gap:6px}
+.chk input{width:18px;height:18px;accent-color:var(--amb)}
+.mini{background:none;border:1px solid var(--ln);border-radius:8px;padding:5px 9px;cursor:pointer;color:var(--mu);font-size:13px}
+.people{display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;margin-bottom:6px}
+.paper{background:#fff;border-radius:10px;overflow:hidden;margin:8px 0}
+.paper svg{display:block;width:100%;height:auto}
+#planoBox{touch-action:none;user-select:none;-webkit-user-select:none}
+.palette{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.palette::-webkit-scrollbar{display:none}
+.palette button{flex:none;border:1px solid var(--ln);background:var(--p1);border-radius:999px;padding:7px 12px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.selp{border-color:var(--lime)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.fx{width:52px;border:2px solid transparent;border-radius:10px;padding:5px 0 4px;text-align:center;cursor:pointer;line-height:1.1}
+.fx .n{font-size:11px;opacity:.85}
+.fx .s{font-family:var(--fd);font-weight:700;font-size:19px}
+.fx .a{font-size:11px;font-weight:600}
+.fx.bad{border-color:var(--red);box-shadow:0 0 0 2px #1C1E21 inset}
+.fx.noaddr .a{opacity:.6}
+.banner{background:#3a2023;border:1px solid #6b2f33;color:#ffb3b5;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.ghead{display:flex;gap:6px;align-items:center;margin:16px 0 6px}
+.ghead input{font-weight:600;background:none;border:0;border-bottom:1px solid var(--ln);border-radius:0;padding:6px 2px}
+.irow{display:grid;grid-template-columns:1fr 64px auto;gap:6px;margin-bottom:6px}
+.auto{color:var(--mu);font-size:14px}
+.auto div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--ln)}
+.libro{display:grid;grid-template-columns:44px 1fr 54px 76px auto;gap:6px;align-items:center;margin-bottom:8px}
+.libro input[type=color]{width:44px;height:44px;border:1px solid var(--ln);border-radius:9px;background:var(--p1);padding:3px}
+.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(transparent,var(--bg) 30%);padding:18px 14px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.bottom .wrap{display:flex;gap:8px;padding:0}
+.bottom .btn{flex:1;padding:14px;font-size:16px}
+#sheetBg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;display:none}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--p1);border-top:1px solid var(--ln);border-radius:16px 16px 0 0;
+  padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 18px);max-height:86vh;overflow:auto;transform:translateY(105%);transition:transform .22s ease}
+#sheet.on{transform:none}
+#sheet .grab{width:40px;height:4px;background:var(--ln);border-radius:4px;margin:4px auto 12px}
+#sheet h3{font-family:var(--fd);font-size:22px;margin:0 0 12px}
+.stack{display:grid;gap:8px}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);transform:translateX(-50%);background:#ECEDEE;color:#1C1E21;
+  padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+.empty{text-align:center;color:var(--mu);padding:40px 10px}
+.empty b{display:block;color:var(--tx);font-family:var(--fd);font-size:22px;margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){#sheet{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar" id="topbar"></div><div class="tabs" id="tabs"></div></header>
+<main class="wrap" id="app"></main>
+<div class="bottom" id="bottom"></div>
+<div id="sheetBg" data-a="closeSheet"></div>
+<div id="sheet"></div>
+<div id="toast"></div>
+<input type="file" id="fileFoto" accept="image/*" hidden>
+<input type="file" id="fileJson" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+/* ================= Datos ================= */
+const LS = 'tesoro_hojaruta_v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad3 = n => String(n).padStart(3, '0');
+const r1 = n => Math.round(n * 10) / 10;
+
+const TIPOS = {
+  tarima:  {n:'Tarima',  cat:'estructura', w:6,   h:2},
+  pantalla:{n:'Pantalla',cat:'pantalla',   w:5,   h:0.4},
+  pa:      {n:'PA',      cat:'sonido',     w:0.8, h:0.8},
+  sub:     {n:'Sub',     cat:'sonido',     w:0.8, h:0.8},
+  demora:  {n:'Demora',  cat:'sonido',     w:0.6, h:0.6},
+  monitor: {n:'Monitor', cat:'sonido',     w:0.7, h:0.5},
+  control: {n:'Control', cat:'control',    w:3,   h:1.5},
+  dj:      {n:'DJ',      cat:'control',    w:2,   h:1},
+  tablero: {n:'Tablero', cat:'energia',    w:0.8, h:0.6},
+  usina:   {n:'Usina',   cat:'energia',    w:1.8, h:1},
+  truss:   {n:'Truss',   cat:'truss',      w:0.3, h:6},
+  zona:    {n:'Texto',   cat:'zona',       w:3,   h:1},
+};
+const CAT = {
+  sonido:{c:'#D85A30',n:'Sonido'}, pantalla:{c:'#534AB7',n:'Pantalla'}, control:{c:'#0F6E56',n:'Control'},
+  energia:{c:'#BA7517',n:'Energía'}, truss:{c:'#888780',n:'Truss'}, estructura:{c:'#B4B2A9',n:'Tarima'}, zona:{c:'#9A9890',n:''}
+};
+
+const REGLAS_DEF = [
+  'El responsable toma las decisiones en el lugar. Si hay que cambiar algo, lo define él.',
+  'Todo equipo colgado va con su safety colocada.',
+  'Avisar al grupo en cada paso: carga lista, llegada, armado OK, prueba OK.',
+  'Al terminar el evento: novedades al grupo (roturas, faltantes, problemas).'
+];
+const CHECK_DEF = [
+  'Energía conectada y tensión controlada',
+  'Estructuras armadas y niveladas',
+  'Luces colgadas según la planta, con safety en cada una',
+  'Luces con su address y probadas desde la consola',
+  'Sonido funcionando',
+  'Pantalla armada y probada con contenido',
+  'Foto del armado completo al grupo + "ARMADO OK"'
+];
+
+function seed() {
+  const biblioteca = [
+    {id:'beam',   nombre:'Beam',   sigla:'B', color:'#7F77DD', canales:null},
+    {id:'nebula', nombre:'Nebula', sigla:'N', color:'#1D9E75', canales:null},
+    {id:'bigpar', nombre:'BigPar', sigla:'P', color:'#EF9F27', canales:null},
+    {id:'strobo', nombre:'Strobo', sigla:'S', color:'#D85A30', canales:null},
+  ];
+  const A = ['bigpar','nebula','beam','nebula','bigpar'], B = ['nebula','nebula','beam','nebula','nebula'];
+  const seq = [...A, ...A, ...B, ...A, ...A, ...B, ...A, ...A];
+  const fx = t => ({id:uid(), lib:t, u:1, a:null});
+  const it = (t, x, y, w, h, label, fase) => ({id:uid(), t, x, y, w, h, label:label||'', fase:fase||''});
+  const tecmaco = {
+    id: uid(), nombre:'Tecmaco', fecha:'2026-09-25', cliente:'Tecmaco (evento corporativo)', lugar:'Carpa de 20 m en Tecmaco',
+    direccion:'', contacto:'', servicio:'Sonido, iluminación y pantalla LED',
+    reglas:[
+      'Nico toma las decisiones en el lugar. Si hay que cambiar algo, lo define él.',
+      'Es una empresa: llevar DNI y respetar las indicaciones de seguridad de Tecmaco.',
+      'Todo equipo colgado del truss va con su safety colocada.',
+      'Avisar al grupo en cada paso: carga lista, llegada, armado OK, prueba OK.',
+      'Al terminar el evento: novedades al grupo (roturas, faltantes, problemas).'
+    ],
+    cronograma:[
+      {dia:'Jue 24/09', hora:'09:00', texto:'Carga en depósito', conf:false},
+      {dia:'', hora:'', texto:'Traslado a Tecmaco y armado completo (hasta terminar)', conf:false},
+      {dia:'', hora:'', texto:'Al terminar: foto del armado al grupo + "ARMADO OK"', conf:false},
+      {dia:'Vie 25/09', hora:'', texto:'Llegada del equipo técnico y prueba general', conf:true},
+      {dia:'', hora:'18:30', texto:'Inicio del evento', conf:false},
+      {dia:'', hora:'', texto:'Fin del evento y desarme', conf:true},
+    ],
+    responsable:'Nico', armado:['Nico','Juani','Lean','Facu','Augusto'],
+    durante:[{nombre:'Nico', tarea:'Luces y pantalla'}, {nombre:'Javier', tarea:'DJ'}],
+    plano:{ancho:15, largo:20, fondo:null, items:[
+      it('pantalla', 5, 0.7, 5, 0.4, 'Pantalla LED 5x3'),
+      it('tarima', 4.5, 1.4, 6, 2, 'Tarima'),
+      it('pa', 3.7, 2, 0.8, 0.8, 'QSC 1'),
+      it('pa', 10.5, 2, 0.8, 0.8, 'QSC 2'),
+      it('control', 0.5, 3.8, 3.4, 1.8, 'Control (DJ, DM3, luces, pantalla)'),
+      it('tablero', 0.2, 0.2, 0.9, 0.7, 'Tablero 3F'),
+      it('usina', -3.1, 0.1, 2.2, 1, 'Usina 3F'),
+      it('truss', 7.35, 3.7, 0.3, 14, 'Truss 14 m'),
+      it('demora', 0.6, 10.5, 0.6, 0.6, 'EV'),
+      it('demora', 13.8, 10.5, 0.6, 0.6, 'EV'),
+      it('zona', 2, 14, 3, 1, 'Público'),
+      it('zona', 10, 14, 3, 1, 'Público'),
+    ]},
+    estructuras:[
+      {id:uid(), nombre:'Truss central', tipo:'truss', largo:14, aparejos:4, fx:seq.map(fx)},
+      {id:uid(), nombre:'Grúa', tipo:'grupo', largo:0, aparejos:0, fx:[...Array(4)].map(()=>fx('beam')).concat([...Array(8)].map(()=>fx('strobo')))},
+    ],
+    equipos:[
+      {g:'Sonido', n:'PA QSC (QSC 1 y QSC 2)', c:'2'}, {g:'Sonido', n:'Demora EV chica', c:'2'}, {g:'Sonido', n:'Pie para EV', c:'2'},
+      {g:'Estructuras', n:'Truss central (total 14 m)', c:'14 m'}, {g:'Estructuras', n:'Aparejos', c:'4'},
+      {g:'Pantalla', n:'Pantalla LED 5x3 m', c:'1'}, {g:'Pantalla', n:'Truss con patas para pantalla', c:'1'},
+      {g:'Control y energía', n:'Consola de sonido DM3', c:'1'}, {g:'Control y energía', n:'Rack de micrófonos Shure', c:'1'},
+      {g:'Control y energía', n:'Tablero trifásico', c:'1'}, {g:'Control y energía', n:'Usina trifásica', c:'1'},
+    ],
+    checklist:[
+      'Usina y tablero trifásico conectados, tensión controlada',
+      'Truss colgado con los 4 aparejos y nivelado',
+      'Luces colgadas según la planta, con safety en cada una',
+      'Luces con su address y probadas desde la consola',
+      'Pantalla armada en su truss con patas y probada con contenido',
+      'PA y demoras funcionando', 'Grúa iluminada y probada',
+      'Foto del armado completo al grupo + "ARMADO OK"'
+    ],
+    actualizado: Date.now()
+  };
+  return {version:1, biblioteca, eventos:[tecmaco]};
+}
+
+function nuevoEvento() {
+  return {
+    id:uid(), nombre:'Nuevo evento', fecha:'', cliente:'', lugar:'', direccion:'', contacto:'', servicio:'',
+    reglas:[...REGLAS_DEF],
+    cronograma:[
+      {dia:'', hora:'', texto:'Carga en depósito', conf:false},
+      {dia:'', hora:'', texto:'Armado', conf:false},
+      {dia:'', hora:'', texto:'Inicio del evento', conf:false},
+      {dia:'', hora:'', texto:'Fin del evento y desarme', conf:false},
+    ],
+    responsable:'', armado:[], durante:[],
+    plano:{ancho:15, largo:20, fondo:null, items:[]},
+    estructuras:[], equipos:[], checklist:[...CHECK_DEF], actualizado:Date.now()
+  };
+}
+
+let DB = (() => { try { const d = JSON.parse(localStorage.getItem(LS)); if (d && Array.isArray(d.eventos)) return d; } catch(e) {} return seed(); })();
+let saveT;
+function save() {
+  const ev = curEv(); if (ev) ev.actualizado = Date.now();
+  try { localStorage.setItem(LS, JSON.stringify(DB)); }
+  catch(e) { toast('No hay más espacio en el celular para guardar. Quitá la foto de fondo de algún plano.'); }
+}
+function saveSoon() { clearTimeout(saveT); saveT = setTimeout(save, 350); }
+
+/* ================= Estado ================= */
+const cur = {view:'home', evId:null, tab:'datos', sel:null, verPlanta:false};
+const curEv = () => DB.eventos.find(e => e.id === cur.evId);
+const libMap = () => Object.fromEntries(DB.biblioteca.map(l => [l.id, l]));
+
+function allFx(ev) {
+  const out = []; let n = 0;
+  ev.estructuras.forEach((e, ei) => e.fx.forEach((f, fi) => out.push({f, e, ei, fi, n: ++n})));
+  return out;
+}
+function conflictos(ev) {
+  const L = libMap(), bad = new Set(), porU = {};
+  allFx(ev).forEach(({f}) => {
+    if (!f.a) return;
+    const ch = (L[f.lib] && L[f.lib].canales) || 1;
+    (porU[f.u || 1] = porU[f.u || 1] || []).push({id:f.id, a:+f.a, b:+f.a + ch - 1});
+  });
+  Object.values(porU).forEach(list => {
+    list.sort((x, y) => x.a - y.a);
+    for (let i = 1; i < list.length; i++) for (let j = i - 1; j >= 0; j--) {
+      if (list[j].b >= list[i].a) { bad.add(list[i].id); bad.add(list[j].id); }
+    }
+    list.forEach(r => { if (r.b > 512) bad.add(r.id); });
+  });
+  return bad;
+}
+function pendientes(ev) {
+  const p = [];
+  if (!ev.direccion) p.push('Dirección del lugar');
+  if (!ev.contacto) p.push('Contacto en el lugar');
+  if (!ev.responsable) p.push('Responsable en el lugar');
+  ev.cronograma.filter(c => c.conf).forEach(c => p.push('Horario: ' + (c.texto || 'sin detalle')));
+  const fx = allFx(ev), sin = fx.filter(x => !x.f.a).length;
+  if (sin) p.push(`${sin} de ${fx.length} luces sin address DMX`);
+  const cf = conflictos(ev).size;
+  if (cf) p.push(`${cf} luces con address superpuesto`);
+  return p;
+}
+const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
+function fmtFecha(f) { if (!f) return 'Sin fecha'; const [y,m,d] = f.split('-').map(Number); const dt = new Date(y, m-1, d); return `${DIAS[dt.getDay()]} ${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`; }
+
+/* ================= Plano SVG ================= */
+const S = 40, MG = 3.5;
+const X = m => (MG + m) * S;
+
+function itemSvg(it, o) {
+  const T = TIPOS[it.t] || TIPOS.zona, cat = T.cat, col = CAT[cat].c;
+  const w = it.w * S, h = it.h * S;
+  let g = `<g data-id="${it.id}" transform="translate(${X(it.x)} ${X(it.y)})">`;
+  if (o.editor) g += `<rect x="-10" y="-10" width="${w + 20}" height="${h + 20}" fill="transparent"/>`;
+  let fill = col, stroke = 'none', tcol = '#fff', dash = '';
+  if (cat === 'estructura') { fill = '#F1EFE8'; stroke = '#888780'; tcol = '#1A1A1A'; }
+  if (cat === 'zona') { fill = 'none'; tcol = '#9A9890'; if (o.editor) { stroke = '#CFCDC6'; dash = 'stroke-dasharray="5 4"'; } }
+  g += `<rect width="${w}" height="${h}" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="1.5" ${dash}/>`;
+  const label = it.label || T.n, fs = cat === 'zona' ? 22 : 16, tw = label.length * fs * 0.56;
+  if (tw <= w - 8 && fs + 6 <= h) {
+    g += `<text x="${w/2}" y="${h/2}" dy=".35em" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${tcol}">${esc(label)}</text>`;
+  } else if (w > h * 3 && tw <= w + 40) {
+    g += `<text x="${w/2}" y="-7" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${cat === 'estructura' ? '#5F5E5A' : col}">${esc(label)}</text>`;
+  } else if (h > w * 2.5) {
+    g += `<text x="${w + 8}" y="${h/2}" dy=".35em" font-size="${fs}" font-weight="700" fill="${cat === 'truss' ? '#5F5E5A' : col}">${esc(label)}</text>`;
+  } else {
+    const c2 = cat === 'estructura' || cat === 'zona' ? '#5F5E5A' : col;
+    g += `<text x="${w/2}" y="${h + fs + 3}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${c2}">${esc(label)}</text>`;
+  }
+  if (it.fase) g += `<circle cx="${w}" cy="0" r="11" fill="#1A1A1A"/><text x="${w}" y="0" dy=".35em" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">${esc(it.fase)}</text>`;
+  if (o.sel === it.id) g += `<rect x="-5" y="-5" width="${w + 10}" height="${h + 10}" rx="5" fill="none" stroke="#8A9400" stroke-width="3" stroke-dasharray="7 4"/>`;
+  return g + '</g>';
+}
+
+function svgPlano(ev, o = {}) {
+  const P = ev.plano, W = (P.ancho + MG * 2) * S, Hv = (P.largo + MG * 2) * S, H = Hv + 50;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"${o.raster ? ` width="${W}" height="${H}"` : ''} font-family="Arial, Helvetica, sans-serif">`;
+  if (!o.raster) s += `<rect width="${W}" height="${H}" fill="#fff"/>`;
+  if (P.fondo && !o.raster) s += `<image href="${P.fondo}" x="${X(0)}" y="${X(0)}" width="${P.ancho * S}" height="${P.largo * S}" preserveAspectRatio="none" opacity=".55"/>`;
+  if (o.editor) {
+    for (let i = 1; i < P.ancho; i++) s += `<line x1="${X(i)}" y1="${X(0)}" x2="${X(i)}" y2="${X(P.largo)}" stroke="#EDEBE5"/>`;
+    for (let i = 1; i < P.largo; i++) s += `<line x1="${X(0)}" y1="${X(i)}" x2="${X(P.ancho)}" y2="${X(i)}" stroke="#EDEBE5"/>`;
+  }
+  s += `<rect x="${X(0)}" y="${X(0)}" width="${P.ancho * S}" height="${P.largo * S}" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-dasharray="10 7"/>`;
+  s += `<text x="${W/2}" y="${X(0) - 44}" text-anchor="middle" font-size="15" font-style="italic" fill="#5F5E5A">Izquierda y derecha: parado en el público, mirando al escenario</text>`;
+  s += `<text x="${W/2}" y="${X(0) - 14}" text-anchor="middle" font-size="19" font-weight="700" fill="#5F5E5A">FRENTE (ESCENARIO)</text>`;
+  s += `<text x="${W/2}" y="${X(P.largo) + 28}" text-anchor="middle" font-size="19" font-weight="700" fill="#5F5E5A">FONDO</text>`;
+  // cotas
+  const cy = X(P.largo) + 52, cx = X(P.ancho) + 26;
+  s += `<g stroke="#5F5E5A" stroke-width="1.5"><line x1="${X(0)}" y1="${cy}" x2="${X(P.ancho)}" y2="${cy}"/><line x1="${X(0)}" y1="${cy-6}" x2="${X(0)}" y2="${cy+6}"/><line x1="${X(P.ancho)}" y1="${cy-6}" x2="${X(P.ancho)}" y2="${cy+6}"/>`;
+  s += `<line x1="${cx}" y1="${X(0)}" x2="${cx}" y2="${X(P.largo)}"/><line x1="${cx-6}" y1="${X(0)}" x2="${cx+6}" y2="${X(0)}"/><line x1="${cx-6}" y1="${X(P.largo)}" x2="${cx+6}" y2="${X(P.largo)}"/></g>`;
+  s += `<text x="${W/2}" y="${cy + 20}" text-anchor="middle" font-size="18" font-weight="700" fill="#5F5E5A">${r1(P.ancho)} m</text>`;
+  s += `<text transform="translate(${cx + 22} ${(X(0) + X(P.largo)) / 2}) rotate(90)" text-anchor="middle" font-size="18" font-weight="700" fill="#5F5E5A">${r1(P.largo)} m</text>`;
+  P.items.forEach(it => { s += itemSvg(it, o); });
+  // leyenda
+  const cats = [...new Set(P.items.map(i => (TIPOS[i.t] || TIPOS.zona).cat))].filter(c => c !== 'zona');
+  let lx = 30;
+  cats.forEach(c => {
+    s += `<rect x="${lx}" y="${Hv + 14}" width="16" height="14" rx="2" fill="${c === 'estructura' ? '#F1EFE8' : CAT[c].c}" stroke="${c === 'estructura' ? '#888780' : 'none'}"/>`;
+    s += `<text x="${lx + 22}" y="${Hv + 26}" font-size="17" fill="#1A1A1A">${CAT[c].n}</text>`;
+    lx += 40 + CAT[c].n.length * 10;
+  });
+  if (P.items.some(i => i.fase)) s += `<text x="${lx}" y="${Hv + 26}" font-size="17" fill="#1A1A1A">L1, L2, L3 = fase del tablero</text>`;
+  return s + '</svg>';
+}
+
+/* ================= Planta de luces SVG ================= */
+const PER = 16, CW = 56, PADX = 30, ROWH = 122;
+function estructuraSvgBody(ev, e, start, bad) {
+  const L = libMap(), n = e.fx.length, rows = Math.max(1, Math.ceil(n / PER));
+  const W = PADX * 2 + PER * CW;
+  let s = `<text x="${PADX}" y="28" font-size="20" font-weight="700" fill="#1A1A1A">${esc(e.nombre)}</text>`;
+  const meta = [e.tipo === 'truss' && e.largo ? `${r1(e.largo)} m` : '', `${n} equipos`, n ? `Nº ${start} a ${start + n - 1}` : ''].filter(Boolean).join('   |   ');
+  s += `<text x="${W - PADX}" y="28" text-anchor="end" font-size="14" fill="#5F5E5A">${esc(meta)}</text>`;
+  const Lg = +e.largo || 0, ap = e.tipo === 'truss' ? (+e.aparejos || 0) : 0;
+  const apPos = ap === 1 ? [Lg / 2] : [...Array(ap)].map((_, k) => k * Lg / (ap - 1));
+  for (let r = 0; r < rows; r++) {
+    const y0 = 44 + r * ROWH, c = Math.min(PER, n - r * PER);
+    if (c <= 0) break;
+    if (e.tipo === 'truss') {
+      s += `<rect x="${PADX}" y="${y0 + 14}" width="${c * CW}" height="10" fill="#888780"/>`;
+      if (Lg) {
+        const m0 = r1(r * PER / n * Lg), m1 = r1((r * PER + c) / n * Lg);
+        s += `<text x="${PADX}" y="${y0 + 8}" font-size="11" fill="#5F5E5A">${m0} m</text>`;
+        s += `<text x="${PADX + c * CW}" y="${y0 + 8}" text-anchor="end" font-size="11" fill="#5F5E5A">${m1} m</text>`;
+        apPos.forEach((m, k) => {
+          const idx = m / Lg * n;
+          const inRow = idx >= r * PER && (idx < r * PER + c || (r === rows - 1 && idx <= r * PER + c));
+          if (!inRow) return;
+          const ax = PADX + (idx - r * PER) * CW;
+          s += `<circle cx="${ax}" cy="${y0 + 19}" r="6" fill="#1A1A1A"/><text x="${ax}" y="${y0 + 114}" text-anchor="middle" font-size="12" font-weight="700" fill="#1A1A1A">A${k + 1}</text>`;
+        });
+      }
+    }
+    for (let i = 0; i < c; i++) {
+      const f = e.fx[r * PER + i], l = L[f.lib] || {sigla:'?', color:'#B4B2A9'};
+      const cx = PADX + (i + 0.5) * CW, cyy = y0 + 48, num = start + r * PER + i;
+      if (e.tipo === 'truss') s += `<line x1="${cx}" y1="${y0 + 24}" x2="${cx}" y2="${cyy - 18}" stroke="#888780" stroke-width="2"/>`;
+      s += `<circle cx="${cx}" cy="${cyy}" r="18" fill="${l.color}"/>`;
+      s += `<text x="${cx}" y="${cyy}" dy=".35em" text-anchor="middle" font-size="15" font-weight="700" fill="${txtOn(l.color)}">${esc(l.sigla)}</text>`;
+      s += `<text x="${cx}" y="${cyy + 34}" text-anchor="middle" font-size="15" font-weight="700" fill="#1A1A1A">${num}</text>`;
+      const isBad = bad.has(f.id);
+      s += `<text x="${cx}" y="${cyy + 51}" text-anchor="middle" font-size="13" font-weight="${isBad ? 700 : 400}" fill="${isBad ? '#C62828' : '#5F5E5A'}">${f.a ? `${f.u || 1}.${pad3(f.a)}` : '—'}</text>`;
+    }
+  }
+  // leyenda
+  const cnt = {}; e.fx.forEach(f => cnt[f.lib] = (cnt[f.lib] || 0) + 1);
+  const ly = 44 + rows * ROWH + 6; let lx = PADX;
+  Object.entries(cnt).forEach(([id, k]) => {
+    const l = L[id] || {nombre:'Sin tipo', sigla:'?', color:'#B4B2A9'};
+    s += `<circle cx="${lx + 9}" cy="${ly}" r="9" fill="${l.color}"/><text x="${lx + 9}" y="${ly}" dy=".35em" text-anchor="middle" font-size="10" font-weight="700" fill="${txtOn(l.color)}">${esc(l.sigla)}</text>`;
+    const t = `${l.nombre}  x${k}`;
+    s += `<text x="${lx + 24}" y="${ly + 5}" font-size="14" font-weight="700" fill="#1A1A1A">${esc(t)}</text>`;
+    lx += 50 + t.length * 8;
+  });
+  return {body: s, W, H: ly + 24};
+}
+function svgWrap(body, W, H, raster, bg = true) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"${raster ? ` width="${W}" height="${H}"` : ''} font-family="Arial, Helvetica, sans-serif">${bg && !raster ? `<rect width="${W}" height="${H}" fill="#fff"/>` : ''}${body}</svg>`;
+}
+function svgEstructura(ev, ei, raster) {
+  const bad = conflictos(ev); let start = 1;
+  for (let i = 0; i < ei; i++) start += ev.estructuras[i].fx.length;
+  const r = estructuraSvgBody(ev, ev.estructuras[ei], start, bad);
+  return svgWrap(r.body, r.W, r.H, raster);
+}
+function svgPlantaTodo(ev, raster) {
+  const bad = conflictos(ev); let start = 1, y = 10, body = '', W = PADX * 2 + PER * CW;
+  body += `<text x="${PADX}" y="${y + 22}" font-size="13" fill="#5F5E5A">Número = Fixture ID. Debajo, universo.address DMX.</text>`; y += 34;
+  ev.estructuras.forEach(e => {
+    const r = estructuraSvgBody(ev, e, start, bad);
+    body += `<g transform="translate(0 ${y})">${r.body}</g>`;
+    y += r.H + 18; start += e.fx.length;
+  });
+  return svgWrap(body, W, y, raster);
+}
+function txtOn(hex) {
+  const h = hex.replace('#', ''); const [r, g, b] = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16));
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 170 ? '#1A1A1A' : '#FFFFFF';
+}
+
+/* ================= Render ================= */
+function render() {
+  const top = $('#topbar'), tabs = $('#tabs'), app = $('#app'), bot = $('#bottom');
+  if (cur.view === 'home') {
+    top.innerHTML = `<div class="brand">Tesoro Eventos<small>Hojas de ruta</small></div>
+      <button class="icon" data-a="goLib" title="Biblioteca de luces" aria-label="Biblioteca de luces">💡</button>
+      <button class="icon" data-a="respaldo" title="Respaldo" aria-label="Respaldo">⋯</button>`;
+    tabs.innerHTML = '';
+    const evs = [...DB.eventos].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
+    app.innerHTML = evs.length ? evs.map(ev => {
+      const p = pendientes(ev).length;
+      return `<button class="card evcard" data-a="openEv" data-id="${ev.id}">
+        <div class="n">${esc(ev.nombre)}</div>
+        <div class="m">${fmtFecha(ev.fecha)}${ev.lugar ? ' en ' + esc(ev.lugar) : ''}</div>
+        <span class="pill ${p ? 'amb' : 'ok'}">${p ? p + (p === 1 ? ' pendiente' : ' pendientes') : 'Lista para mandar'}</span></button>`;
+    }).join('') : `<div class="empty"><b>Todavía no hay hojas de ruta</b>Creá la primera para el próximo evento.</div>`;
+    bot.innerHTML = `<div class="wrap"><button class="btn pri" data-a="newEv">Nueva hoja de ruta</button></div>`;
+    return;
+  }
+  if (cur.view === 'lib') {
+    top.innerHTML = `<button class="icon" data-a="home" aria-label="Volver">‹</button><h1 class="t">Biblioteca de luces</h1>`;
+    tabs.innerHTML = '';
+    app.innerHTML = `<p class="hint">Los tipos de luces que usan en las plantas. Los canales son opcionales: solo hacen falta para el calculador de address.</p>
+      ${DB.biblioteca.map((l, i) => `<div class="libro">
+        <input type="color" value="${l.color}" data-o="lib" data-p="${i}.color" data-r="lib" aria-label="Color">
+        <input type="text" value="${esc(l.nombre)}" data-o="lib" data-p="${i}.nombre" placeholder="Nombre">
+        <input type="text" value="${esc(l.sigla)}" maxlength="2" data-o="lib" data-p="${i}.sigla" placeholder="Sigla" aria-label="Sigla">
+        <input type="number" value="${l.canales ?? ''}" min="1" max="512" data-o="lib" data-p="${i}.canales" data-num placeholder="Canales" aria-label="Canales">
+        <button class="mini" data-a="delLib" data-i="${i}" aria-label="Borrar">✕</button></div>`).join('')}
+      <button class="btn sm" data-a="addLib">Agregar tipo de luz</button>`;
+    bot.innerHTML = '';
+    return;
+  }
+  const ev = curEv(); if (!ev) { cur.view = 'home'; return render(); }
+  top.innerHTML = `<button class="icon" data-a="home" aria-label="Volver">‹</button><h1 class="t">${esc(ev.nombre)}</h1>`;
+  const T = [['datos', 'Datos'], ['horarios', 'Horarios'], ['equipo', 'Equipo'], ['plano', 'Plano'], ['luces', 'Luces'], ['lista', 'Lista']];
+  tabs.innerHTML = T.map(([k, n]) => `<button class="${cur.tab === k ? 'on' : ''}" data-a="tab" data-t="${k}">${n}</button>`).join('');
+  bot.innerHTML = `<div class="wrap"><button class="btn pri" data-a="compartir">Generar y compartir</button></div>`;
+  ({datos: rDatos, horarios: rHorarios, equipo: rEquipo, plano: rPlano, luces: rLuces, lista: rLista})[cur.tab](ev, app);
+}
+
+const fld = (label, path, val, extra = '') => `<label class="field"><span>${label}</span><input type="text" data-p="${path}" value="${esc(val)}" ${extra}></label>`;
+
+function rDatos(ev, app) {
+  const p = pendientes(ev);
+  app.innerHTML = `${p.length ? `<div class="pend"><b>Falta completar</b><ul>${p.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+    <h2>El evento</h2>
+    ${fld('Nombre del evento', 'nombre', ev.nombre, 'data-r="title"')}
+    <label class="field"><span>Fecha del evento</span><input type="date" data-p="fecha" value="${esc(ev.fecha)}"></label>
+    ${fld('Cliente', 'cliente', ev.cliente)}
+    ${fld('Lugar', 'lugar', ev.lugar, 'placeholder="Salón, empresa, club, aire libre…"')}
+    ${fld('Dirección', 'direccion', ev.direccion, 'placeholder="Si queda vacío sale como A CONFIRMAR"')}
+    ${fld('Contacto en el lugar', 'contacto', ev.contacto, 'placeholder="Nombre y teléfono de quien los recibe"')}
+    ${fld('Servicio', 'servicio', ev.servicio)}
+    <h2>Reglas del día</h2>
+    <p class="hint">Una por línea. Salen en la primera página.</p>
+    <textarea data-p="reglas" data-lines>${esc(ev.reglas.join('\n'))}</textarea>
+    <h2>Esta hoja de ruta</h2>
+    <p class="hint">Duplicala para reutilizarla en otro evento en el mismo lugar o con el mismo armado.</p>
+    <div class="row"><button class="btn sm" data-a="dupEv">Duplicar</button><button class="btn sm danger" data-a="delEv">Borrar</button></div>`;
+}
+
+function rHorarios(ev, app) {
+  app.innerHTML = `<h2>Cronograma</h2>
+    <p class="hint">Todo el día, no solo el evento: carga, llegada, armado, prueba, inicio, fin y desarme. Si un horario no está definido, marcalo como a confirmar.</p>
+    ${ev.cronograma.map((c, i) => `<div class="card" style="padding:10px">
+      <div class="lrow">
+        <input type="text" data-p="cronograma.${i}.dia" value="${esc(c.dia)}" placeholder="Día (ej. Jue 24/09)" aria-label="Día">
+        <input type="text" data-p="cronograma.${i}.hora" value="${esc(c.hora)}" placeholder="Hora" aria-label="Hora">
+        <input type="text" data-p="cronograma.${i}.texto" value="${esc(c.texto)}" placeholder="Qué pasa" aria-label="Qué pasa" class="tx">
+        <div class="x"><label class="chk"><input type="checkbox" data-p="cronograma.${i}.conf" ${c.conf ? 'checked' : ''}>Horario a confirmar</label>
+          <span class="row"><button class="mini" data-a="mv" data-l="cronograma" data-i="${i}" data-d="-1" aria-label="Subir">↑</button><button class="mini" data-a="mv" data-l="cronograma" data-i="${i}" data-d="1" aria-label="Bajar">↓</button><button class="mini" data-a="del" data-l="cronograma" data-i="${i}" aria-label="Borrar">✕</button></span></div>
+      </div></div>`).join('')}
+    <button class="btn sm" data-a="addCrono">Agregar horario</button>`;
+}
+
+function rEquipo(ev, app) {
+  app.innerHTML = `<h2>Responsable en el lugar</h2>
+    <p class="hint">Quien decide cuando ustedes no están. Figura en el pie de todas las páginas.</p>
+    ${fld('Responsable', 'responsable', ev.responsable)}
+    <h2>Armado</h2>
+    <p class="hint">Un nombre por línea.</p>
+    <textarea data-p="armado" data-lines style="min-height:130px">${esc(ev.armado.join('\n'))}</textarea>
+    <h2>Durante el evento</h2>
+    ${ev.durante.map((d, i) => `<div class="people">
+      <input type="text" data-p="durante.${i}.nombre" value="${esc(d.nombre)}" placeholder="Nombre">
+      <input type="text" data-p="durante.${i}.tarea" value="${esc(d.tarea)}" placeholder="Qué hace">
+      <button class="mini" data-a="del" data-l="durante" data-i="${i}" aria-label="Borrar">✕</button></div>`).join('')}
+    <button class="btn sm" data-a="addDurante">Agregar persona</button>`;
+}
+
+/* ---- Plano ---- */
+function rPlano(ev, app) {
+  const P = ev.plano;
+  app.innerHTML = `<div class="grid2">
+      <label class="field"><span>Ancho (m)</span><input type="number" step="0.5" min="2" data-p="plano.ancho" data-num data-r="plano" value="${P.ancho}"></label>
+      <label class="field"><span>Largo (m)</span><input type="number" step="0.5" min="2" data-p="plano.largo" data-num data-r="plano" value="${P.largo}"></label>
+    </div>
+    <div class="row" style="margin-bottom:12px"><button class="btn sm" data-a="foto">${P.fondo ? 'Cambiar foto de fondo' : 'Poner foto o croquis de fondo'}</button>${P.fondo ? '<button class="btn sm danger" data-a="sinFoto">Quitar foto</button>' : ''}</div>
+    <div class="palette">${Object.entries(TIPOS).map(([k, t]) => `<button data-a="addItem" data-t="${k}"><span class="dot" style="background:${t.cat === 'estructura' ? '#F1EFE8' : t.cat === 'zona' ? 'transparent;border:1px dashed #9A9890' : CAT[t.cat].c}"></span>${t.n}</button>`).join('')}</div>
+    <div class="paper" id="planoBox"></div>
+    <p class="hint">Tocá un elemento para editarlo y arrastralo para ubicarlo. Arriba del plano está el escenario.</p>
+    <div id="selPanel"></div>`;
+  drawPlano(); drawSel(); bindPlano();
+}
+function drawPlano() { const b = $('#planoBox'); if (b) b.innerHTML = svgPlano(curEv(), {editor:true, sel:cur.sel}); }
+function drawSel() {
+  const ev = curEv(), box = $('#selPanel'); if (!box) return;
+  const i = ev.plano.items.findIndex(x => x.id === cur.sel);
+  if (i < 0) { box.innerHTML = ''; return; }
+  const it = ev.plano.items[i], T = TIPOS[it.t] || TIPOS.zona, b = `plano.items.${i}`;
+  box.innerHTML = `<div class="card selp">
+    <h2 style="margin-top:0">${esc(T.n)}</h2>
+    ${fld('Nombre en el plano', b + '.label', it.label, 'data-r="plano" placeholder="' + esc(T.n) + '"')}
+    <div class="grid2">
+      <label class="field"><span>Ancho (m)</span><input type="number" step="0.1" min="0.1" data-p="${b}.w" data-num data-r="plano" value="${it.w}"></label>
+      <label class="field"><span>Largo (m)</span><input type="number" step="0.1" min="0.1" data-p="${b}.h" data-num data-r="plano" value="${it.h}"></label>
+      <label class="field"><span>Desde la izquierda (m)</span><input type="number" step="0.1" data-p="${b}.x" data-num data-r="plano" value="${it.x}"></label>
+      <label class="field"><span>Desde el frente (m)</span><input type="number" step="0.1" data-p="${b}.y" data-num data-r="plano" value="${it.y}"></label>
+    </div>
+    <label class="field"><span>Fase del tablero</span><select data-p="${b}.fase" data-r="plano">
+      ${['', 'L1', 'L2', 'L3'].map(f => `<option value="${f}" ${it.fase === f ? 'selected' : ''}>${f || 'Sin indicar'}</option>`).join('')}</select></label>
+    <div class="row"><button class="btn sm" data-a="rotItem">Girar 90°</button><button class="btn sm" data-a="dupItem">Duplicar</button><button class="btn sm danger" data-a="delItem">Borrar</button></div></div>`;
+}
+let drag = null;
+function bindPlano() {
+  const box = $('#planoBox'); if (!box) return;
+  const toSvg = (svg, e) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+  box.onpointerdown = e => {
+    const g0 = e.target.closest('g[data-id]'); const ev = curEv();
+    if (!g0) { if (cur.sel) { cur.sel = null; drawPlano(); drawSel(); } return; }
+    const id = g0.dataset.id, it = ev.plano.items.find(x => x.id === id); if (!it) return;
+    if (cur.sel !== id) { cur.sel = id; drawPlano(); drawSel(); }
+    const svg = box.querySelector('svg'), g = box.querySelector(`g[data-id="${id}"]`), pt = toSvg(svg, e);
+    drag = {it, g, svg, sx:pt.x, sy:pt.y, ox:it.x, oy:it.y, moved:false};
+    try { box.setPointerCapture(e.pointerId); } catch(_) {}
+    e.preventDefault();
+  };
+  box.onpointermove = e => {
+    if (!drag) return;
+    const pt = toSvg(drag.svg, e), P = curEv().plano;
+    let nx = r1(drag.ox + (pt.x - drag.sx) / S), ny = r1(drag.oy + (pt.y - drag.sy) / S);
+    nx = Math.min(Math.max(nx, -MG + 0.1), P.ancho + MG - drag.it.w - 0.1);
+    ny = Math.min(Math.max(ny, -MG + 0.1), P.largo + MG - drag.it.h - 0.1);
+    if (nx !== drag.it.x || ny !== drag.it.y) drag.moved = true;
+    drag.it.x = nx; drag.it.y = ny;
+    drag.g.setAttribute('transform', `translate(${X(nx)} ${X(ny)})`);
+  };
+  box.onpointerup = box.onpointercancel = () => {
+    if (!drag) return; const m = drag.moved; drag = null;
+    if (m) { save(); drawPlano(); drawSel(); }
+  };
+}
+
+/* ---- Luces ---- */
+function rLuces(ev, app) {
+  const L = libMap(), bad = conflictos(ev); let n = 0;
+  const libOpts = sel => DB.biblioteca.map(l => `<option value="${l.id}" ${sel === l.id ? 'selected' : ''}>${esc(l.nombre)}</option>`).join('');
+  app.innerHTML = `${bad.size ? `<div class="banner">${bad.size} luces tienen el address superpuesto o fuera del universo. Están marcadas en rojo.</div>` : ''}
+    <p class="hint">El número de cada luz es su Fixture ID para la consola. Tocá una luz para cargar su address.</p>
+    ${ev.estructuras.map((e, ei) => `<div class="card">
+      <div class="grid2">
+        <label class="field"><span>Nombre</span><input type="text" data-p="estructuras.${ei}.nombre" value="${esc(e.nombre)}"></label>
+        <label class="field"><span>Tipo</span><select data-p="estructuras.${ei}.tipo" data-r="luces"><option value="truss" ${e.tipo === 'truss' ? 'selected' : ''}>Truss</option><option value="grupo" ${e.tipo === 'grupo' ? 'selected' : ''}>Grupo (piso, grúa…)</option></select></label>
+        ${e.tipo === 'truss' ? `<label class="field"><span>Largo (m)</span><input type="number" step="0.5" min="0" data-p="estructuras.${ei}.largo" data-num value="${e.largo || ''}"></label>
+        <label class="field"><span>Aparejos</span><input type="number" min="0" max="20" data-p="estructuras.${ei}.aparejos" data-num value="${e.aparejos || ''}"></label>` : ''}
+      </div>
+      <div class="chips">${e.fx.map((f, fi) => { n++; const l = L[f.lib] || {sigla:'?', color:'#666'}; const tc = txtOn(l.color);
+        return `<button class="fx ${bad.has(f.id) ? 'bad' : ''} ${f.a ? '' : 'noaddr'}" style="background:${l.color};color:${tc}" data-a="fx" data-e="${ei}" data-i="${fi}" aria-label="Luz ${n}">
+          <div class="n">${n}</div><div class="s">${esc(l.sigla)}</div><div class="a">${f.a ? `${f.u || 1}.${pad3(f.a)}` : '—'}</div></button>`; }).join('') || '<span class="hint" style="margin:0">Sin luces todavía.</span>'}</div>
+      <div class="irow" style="grid-template-columns:1fr 64px auto">
+        <select id="addLib${ei}" aria-label="Tipo de luz">${libOpts()}</select>
+        <input type="number" id="addCant${ei}" value="1" min="1" max="200" aria-label="Cantidad">
+        <button class="btn sm pri" data-a="addFx" data-e="${ei}">Agregar</button>
+      </div>
+      <div class="row" style="margin-top:6px"><button class="mini" data-a="mvEst" data-i="${ei}" data-d="-1">Subir</button><button class="mini" data-a="mvEst" data-i="${ei}" data-d="1">Bajar</button><button class="mini" data-a="dupEst" data-i="${ei}">Duplicar</button><button class="mini" data-a="delEst" data-i="${ei}" style="color:var(--red)">Borrar</button></div>
+    </div>`).join('')}
+    <div class="row" style="margin-bottom:16px"><button class="btn sm" data-a="addEst" data-t="truss">Agregar truss</button><button class="btn sm" data-a="addEst" data-t="grupo">Agregar grupo</button><button class="btn sm" data-a="calc">Calculador de address</button></div>
+    ${ev.estructuras.length ? `<button class="btn sm" data-a="verPlanta">${cur.verPlanta ? 'Ocultar planta' : 'Ver cómo sale la planta'}</button>
+    ${cur.verPlanta ? `<div class="paper">${svgPlantaTodo(ev)}</div>` : ''}` : ''}`;
+}
+
+function fxSheet(ei, fi) {
+  const ev = curEv(), e = ev.estructuras[ei]; if (!e || !e.fx[fi]) return closeSheet();
+  const f = e.fx[fi], L = libMap(), l = L[f.lib];
+  const all = allFx(ev), me = all.find(x => x.f.id === f.id), b = `estructuras.${ei}.fx.${fi}`;
+  const rango = f.a && l && l.canales ? `Ocupa ${f.u || 1}.${pad3(f.a)} a ${f.u || 1}.${pad3(+f.a + l.canales - 1)}` : '';
+  // sugerido: siguiente libre después de la luz anterior
+  let sug = null;
+  const prev = all[me.n - 2];
+  if (prev && prev.f.a && L[prev.f.lib] && L[prev.f.lib].canales) {
+    let u = prev.f.u || 1, a = +prev.f.a + L[prev.f.lib].canales;
+    const ch = (l && l.canales) || 1; if (a + ch - 1 > 512) { u++; a = 1; }
+    sug = {u, a};
+  }
+  openSheet(`<h3>Luz ${me.n} en ${esc(e.nombre)}</h3>
+    <label class="field"><span>Tipo</span><select data-p="${b}.lib" data-r="luces">${DB.biblioteca.map(x => `<option value="${x.id}" ${x.id === f.lib ? 'selected' : ''}>${esc(x.nombre)}${x.canales ? ` (${x.canales} canales)` : ''}</option>`).join('')}</select></label>
+    <div class="grid2">
+      <label class="field"><span>Universo</span><input type="number" min="1" max="64" data-p="${b}.u" data-num data-r="luces" value="${f.u || 1}"></label>
+      <label class="field"><span>Address</span><input type="number" min="1" max="512" id="fxAddr" data-p="${b}.a" data-num data-r="luces" value="${f.a ?? ''}" inputmode="numeric"></label>
+    </div>
+    ${rango ? `<p class="hint">${rango}</p>` : ''}
+    ${sug && !f.a ? `<button class="btn sm" style="margin-bottom:12px" data-a="usarSug" data-e="${ei}" data-i="${fi}" data-u="${sug.u}" data-ad="${sug.a}">Usar ${sug.u}.${pad3(sug.a)} (sigue a la anterior)</button>` : ''}
+    <div class="row" style="margin-bottom:12px"><button class="btn sm" data-a="mvFx" data-e="${ei}" data-i="${fi}" data-d="-1">Mover a la izquierda</button><button class="btn sm" data-a="mvFx" data-e="${ei}" data-i="${fi}" data-d="1">Mover a la derecha</button></div>
+    <div class="row"><button class="btn danger" data-a="delFx" data-e="${ei}" data-i="${fi}">Borrar luz</button>
+      <button class="btn pri" style="flex:1" data-a="nextFx" data-n="${me.n}">${me.n < all.length ? 'Siguiente luz' : 'Listo'}</button></div>`);
+}
+
+function calcSheet() {
+  const ev = curEv(), L = libMap();
+  let nu = 1, na = 1;
+  allFx(ev).forEach(({f}) => { if (!f.a) return; const u = f.u || 1, fin = +f.a + ((L[f.lib] && L[f.lib].canales) || 1);
+    if (u > nu || (u === nu && fin > na)) { nu = u; na = fin; } });
+  if (na > 512) { nu++; na = 1; }
+  openSheet(`<h3>Calculador de address</h3>
+    <p class="hint">Asigna los address en orden, según los canales de cada tipo de luz. Si pasa de 512, sigue en el universo siguiente.</p>
+    <div class="grid2">
+      <label class="field"><span>Universo inicial</span><input type="number" id="cU" min="1" value="${nu}"></label>
+      <label class="field"><span>Address inicial</span><input type="number" id="cA" min="1" max="512" value="${na}"></label>
+    </div>
+    <label class="field"><span>Aplicar a</span><select id="cE"><option value="-1">Todas las estructuras</option>${ev.estructuras.map((e, i) => `<option value="${i}">${esc(e.nombre)}</option>`).join('')}</select></label>
+    <label class="chk" style="margin-bottom:16px"><input type="checkbox" id="cV" checked style="accent-color:var(--lime)">Solo las luces sin address</label>
+    <button class="btn pri" style="width:100%" data-a="runCalc">Asignar address</button>`);
+}
+function runCalc() {
+  const ev = curEv(), L = libMap();
+  let u = +$('#cU').value || 1, a = +$('#cA').value || 1;
+  const ei = +$('#cE').value, soloV = $('#cV').checked;
+  const scope = allFx(ev).filter(x => (ei < 0 || x.ei === ei) && (!soloV || !x.f.a));
+  if (!scope.length) return toast('No hay luces para asignar');
+  const falta = [...new Set(scope.filter(x => !(L[x.f.lib] && L[x.f.lib].canales)).map(x => (L[x.f.lib] || {nombre:'Sin tipo'}).nombre))];
+  if (falta.length) return toast(`Cargá los canales de ${falta.join(', ')} en la Biblioteca de luces`);
+  scope.forEach(x => {
+    const ch = L[x.f.lib].canales;
+    if (a + ch - 1 > 512) { u++; a = 1; }
+    x.f.u = u; x.f.a = a; a += ch;
+  });
+  save(); closeSheet(); render(); toast(`Listo: ${scope.length} luces con address`);
+}
+
+/* ---- Lista ---- */
+function rLista(ev, app) {
+  const L = libMap(), groups = [];
+  ev.equipos.forEach(x => { if (!groups.includes(x.g)) groups.push(x.g); });
+  app.innerHTML = `<h2>Iluminación</h2>
+    <p class="hint">Sale sola de la pestaña Luces.</p>
+    <div class="auto">${ev.estructuras.length ? ev.estructuras.map(e => {
+      const cnt = {}; e.fx.forEach(f => cnt[f.lib] = (cnt[f.lib] || 0) + 1);
+      return `<div style="color:var(--tx);font-weight:600;border:0;padding-top:10px">${esc(e.nombre)}</div>` + Object.entries(cnt).map(([id, k]) => `<div><span>${esc((L[id] || {nombre:'Sin tipo'}).nombre)}</span><b>${k}</b></div>`).join('');
+    }).join('') : '<div>Todavía no hay luces cargadas.</div>'}</div>
+    <h2>Otros equipos</h2>
+    <p class="hint">Sonido, estructuras, pantalla, control, energía. La cantidad puede ser texto (por ejemplo, 14 m).</p>
+    ${groups.map(g => `<div class="ghead"><input type="text" value="${esc(g)}" data-grp="${esc(g)}" aria-label="Nombre del grupo"><button class="mini" data-a="addEq" data-g="${esc(g)}">Agregar</button></div>
+      ${ev.equipos.map((x, i) => x.g !== g ? '' : `<div class="irow">
+        <input type="text" data-p="equipos.${i}.n" value="${esc(x.n)}" placeholder="Equipo">
+        <input type="text" data-p="equipos.${i}.c" value="${esc(x.c)}" placeholder="Cant." aria-label="Cantidad">
+        <button class="mini" data-a="del" data-l="equipos" data-i="${i}" aria-label="Borrar">✕</button></div>`).join('')}`).join('')}
+    <button class="btn sm" data-a="addGrupo" style="margin-top:6px">Agregar grupo</button>
+    <h2>Checklist del armado</h2>
+    <p class="hint">Uno por línea. Sale con casilleros para marcar.</p>
+    <textarea data-p="checklist" data-lines style="min-height:180px">${esc(ev.checklist.join('\n'))}</textarea>`;
+}
+
+/* ================= Sheet / toast ================= */
+function openSheet(html) { const s = $('#sheet'); s.innerHTML = '<div class="grab"></div>' + html; $('#sheetBg').style.display = 'block'; requestAnimationFrame(() => s.classList.add('on')); }
+function closeSheet() { $('#sheet').classList.remove('on'); $('#sheetBg').style.display = 'none'; }
+let toastT;
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2800); }
+
+/* ================= Inputs ================= */
+function setPath(obj, path, val) {
+  const k = path.split('.'); let o = obj;
+  for (let i = 0; i < k.length - 1; i++) o = o[/^\d+$/.test(k[i]) ? +k[i] : k[i]];
+  o[/^\d+$/.test(k.at(-1)) ? +k.at(-1) : k.at(-1)] = val;
+}
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.grp !== undefined) {
+    const ev = curEv(), old = el.dataset.grp, nv = el.value;
+    ev.equipos.forEach(x => { if (x.g === old) x.g = nv; });
+    el.dataset.grp = nv; el.nextElementSibling.dataset.g = nv; saveSoon(); return;
+  }
+  if (!el.dataset.p) return;
+  const obj = el.dataset.o === 'lib' ? DB.biblioteca : curEv(); if (!obj) return;
+  let v;
+  if (el.type === 'checkbox') v = el.checked;
+  else if (el.dataset.lines !== undefined) v = el.value.split('\n').map(s => s.trim()).filter(Boolean);
+  else if (el.dataset.num !== undefined) v = el.value === '' ? null : Number(el.value);
+  else v = el.value;
+  if (el.dataset.num !== undefined && el.closest('.card.selp') && (v === null || v <= 0) && /\.(w|h)$/.test(el.dataset.p)) return;
+  if (/^plano\.(ancho|largo)$/.test(el.dataset.p) && (!v || v < 2)) return;
+  setPath(obj, el.dataset.p, v);
+  saveSoon();
+  const r = el.dataset.r;
+  if (r === 'plano') drawPlano();
+  else if (r === 'title') $('#topbar h1').textContent = v;
+  else if (r === 'luces') { save(); const y = scrollY; render(); scrollTo(0, y); }
+  else if (r === 'lib') { save(); }
+});
+
+/* ================= Acciones ================= */
+const A = {
+  home() { save(); cur.view = 'home'; cur.sel = null; closeSheet(); render(); scrollTo(0, 0); },
+  goLib() { cur.view = 'lib'; render(); },
+  openEv(b) { cur.view = 'ev'; cur.evId = b.dataset.id; cur.tab = 'datos'; cur.sel = null; render(); scrollTo(0, 0); },
+  newEv() { const ev = nuevoEvento(); DB.eventos.push(ev); save(); cur.view = 'ev'; cur.evId = ev.id; cur.tab = 'datos'; render(); },
+  tab(b) { save(); cur.tab = b.dataset.t; cur.sel = null; render(); scrollTo(0, 0); },
+  closeSheet,
+  dupEv() {
+    const ev = JSON.parse(JSON.stringify(curEv())); ev.id = uid(); ev.nombre += ' (copia)'; ev.fecha = '';
+    ev.plano.items.forEach(i => i.id = uid()); ev.estructuras.forEach(e => { e.id = uid(); e.fx.forEach(f => f.id = uid()); });
+    DB.eventos.push(ev); cur.evId = ev.id; save(); render(); toast('Hoja de ruta duplicada');
+  },
+  delEv() { if (!confirm('¿Borrar esta hoja de ruta? No se puede deshacer.')) return; DB.eventos = DB.eventos.filter(e => e.id !== cur.evId); save(); A.home(); },
+  mv(b) { const l = curEv()[b.dataset.l], i = +b.dataset.i, j = i + +b.dataset.d; if (j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; save(); render(); },
+  del(b) { curEv()[b.dataset.l].splice(+b.dataset.i, 1); save(); const y = scrollY; render(); scrollTo(0, y); },
+  addCrono() { curEv().cronograma.push({dia:'', hora:'', texto:'', conf:false}); save(); render(); },
+  addDurante() { curEv().durante.push({nombre:'', tarea:''}); save(); render(); },
+  // plano
+  addItem(b) {
+    const ev = curEv(), T = TIPOS[b.dataset.t], P = ev.plano;
+    const it = {id:uid(), t:b.dataset.t, w:T.w, h:T.h, x:r1((P.ancho - T.w) / 2), y:r1((P.largo - T.h) / 2), label:'', fase:''};
+    P.items.push(it); cur.sel = it.id; save(); drawPlano(); drawSel();
+  },
+  rotItem() { const it = curEv().plano.items.find(x => x.id === cur.sel); if (!it) return; [it.w, it.h] = [it.h, it.w]; save(); drawPlano(); drawSel(); },
+  dupItem() { const P = curEv().plano, it = P.items.find(x => x.id === cur.sel); if (!it) return; const c = {...it, id:uid(), x:r1(it.x + 0.6), y:r1(it.y + 0.6)}; P.items.push(c); cur.sel = c.id; save(); drawPlano(); drawSel(); },
+  delItem() { const P = curEv().plano; P.items = P.items.filter(x => x.id !== cur.sel); cur.sel = null; save(); drawPlano(); drawSel(); },
+  foto() { $('#fileFoto').click(); },
+  sinFoto() { curEv().plano.fondo = null; save(); render(); },
+  // luces
+  addEst(b) { const t = b.dataset.t; curEv().estructuras.push({id:uid(), nombre:t === 'truss' ? 'Truss' : 'Grupo', tipo:t, largo:t === 'truss' ? 6 : 0, aparejos:t === 'truss' ? 2 : 0, fx:[]}); save(); render(); },
+  delEst(b) { const e = curEv().estructuras[+b.dataset.i]; if (e.fx.length && !confirm(`¿Borrar "${e.nombre}" con sus ${e.fx.length} luces?`)) return; curEv().estructuras.splice(+b.dataset.i, 1); save(); render(); },
+  dupEst(b) { const E = curEv().estructuras, e = JSON.parse(JSON.stringify(E[+b.dataset.i])); e.id = uid(); e.nombre += ' (copia)'; e.fx.forEach(f => { f.id = uid(); f.a = null; }); E.splice(+b.dataset.i + 1, 0, e); save(); render(); },
+  mvEst(b) { const E = curEv().estructuras, i = +b.dataset.i, j = i + +b.dataset.d; if (j < 0 || j >= E.length) return; [E[i], E[j]] = [E[j], E[i]]; save(); render(); },
+  addFx(b) {
+    const ei = +b.dataset.e, lib = $('#addLib' + ei).value, n = Math.min(200, Math.max(1, +$('#addCant' + ei).value || 1));
+    if (!lib) return toast('Primero agregá tipos de luces en la Biblioteca');
+    const y = scrollY; for (let i = 0; i < n; i++) curEv().estructuras[ei].fx.push({id:uid(), lib, u:1, a:null});
+    save(); render(); scrollTo(0, y);
+  },
+  fx(b) { fxSheet(+b.dataset.e, +b.dataset.i); },
+  usarSug(b) { const f = curEv().estructuras[+b.dataset.e].fx[+b.dataset.i]; f.u = +b.dataset.u; f.a = +b.dataset.ad; save(); const y = scrollY; render(); scrollTo(0, y); fxSheet(+b.dataset.e, +b.dataset.i); },
+  mvFx(b) {
+    const ei = +b.dataset.e, i = +b.dataset.i, j = i + +b.dataset.d, l = curEv().estructuras[ei].fx; if (j < 0 || j >= l.length) return;
+    [l[i], l[j]] = [l[j], l[i]]; save(); const y = scrollY; render(); scrollTo(0, y); fxSheet(ei, j);
+  },
+  delFx(b) { curEv().estructuras[+b.dataset.e].fx.splice(+b.dataset.i, 1); save(); closeSheet(); const y = scrollY; render(); scrollTo(0, y); },
+  nextFx(b) {
+    const all = allFx(curEv()), n = +b.dataset.n;
+    if (n >= all.length) return closeSheet();
+    const nx = all[n]; fxSheet(nx.ei, nx.fi);
+    setTimeout(() => { const i = $('#fxAddr'); if (i) i.focus(); }, 60);
+  },
+  calc: calcSheet, runCalc,
+  verPlanta() { cur.verPlanta = !cur.verPlanta; const y = scrollY; render(); scrollTo(0, y); },
+  // lista
+  addEq(b) { const ev = curEv(), g = b.dataset.g; let at = -1; ev.equipos.forEach((x, i) => { if (x.g === g) at = i; }); ev.equipos.splice(at + 1, 0, {g, n:'', c:''}); save(); const y = scrollY; render(); scrollTo(0, y); },
+  addGrupo() { curEv().equipos.push({g:'Nuevo grupo', n:'', c:''}); save(); render(); },
+  // biblioteca
+  addLib() { DB.biblioteca.push({id:uid(), nombre:'', sigla:'', color:'#4AA3E0', canales:null}); save(); render(); },
+  delLib(b) {
+    const l = DB.biblioteca[+b.dataset.i], usos = DB.eventos.reduce((s, ev) => s + allFx(ev).filter(x => x.f.lib === l.id).length, 0);
+    if (usos && !confirm(`"${l.nombre}" se usa en ${usos} luces. ¿Borrarlo igual?`)) return;
+    DB.biblioteca.splice(+b.dataset.i, 1); save(); render();
+  },
+  respaldo() {
+    openSheet(`<h3>Respaldo</h3><p class="hint">Todo se guarda en este celular. Descargá un respaldo para pasarlo a otro teléfono (por ejemplo, al de Lucas) o no perderlo.</p>
+      <div class="stack"><button class="btn pri" data-a="exportar">Descargar respaldo</button><button class="btn" data-a="importar">Cargar respaldo</button></div>`);
+  },
+  exportar() { descargar(new Blob([JSON.stringify(DB)], {type:'application/json'}), `hojas-de-ruta-${new Date().toISOString().slice(0, 10)}.json`); closeSheet(); },
+  importar() { $('#fileJson').click(); },
+  compartir: shareSheet,
+  share(b) { doShare(b.dataset.k); },
+};
+document.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; const f = A[b.dataset.a]; if (f) f(b, e); });
+
+$('#fileFoto').onchange = e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => { const im = new Image(); im.onload = () => {
+    const k = Math.min(1, 1200 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+    c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    curEv().plano.fondo = c.toDataURL('image/jpeg', 0.6); save(); render();
+  }; im.src = rd.result; };
+  rd.readAsDataURL(file);
+};
+$('#fileJson').onchange = e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  file.text().then(t => {
+    const d = JSON.parse(t); if (!d || !Array.isArray(d.eventos)) throw 0;
+    d.eventos.forEach(ev => { const i = DB.eventos.findIndex(x => x.id === ev.id); if (i >= 0) DB.eventos[i] = ev; else DB.eventos.push(ev); });
+    (d.biblioteca || []).forEach(l => { if (!DB.biblioteca.some(x => x.id === l.id)) DB.biblioteca.push(l); });
+    save(); closeSheet(); render(); toast(`Respaldo cargado: ${d.eventos.length} hojas de ruta`);
+  }).catch(() => toast('Ese archivo no es un respaldo de hojas de ruta'));
+};
+
+/* ================= Exportar: imágenes y PDF ================= */
+function loadImg(src) { return new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = src; }); }
+async function svgCanvas(svg, widthPx, bg) {
+  const m = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/), vw = +m[1], vh = +m[2], k = widthPx / vw;
+  const c = document.createElement('canvas'); c.width = Math.round(widthPx); c.height = Math.round(vh * k);
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  if (bg) { const im = await loadImg(bg.src); ctx.globalAlpha = 0.55; ctx.drawImage(im, bg.x * k, bg.y * k, bg.w * k, bg.h * k); ctx.globalAlpha = 1; }
+  const im = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+  ctx.drawImage(im, 0, 0, c.width, c.height);
+  return c;
+}
+function planoCanvas(ev) {
+  const P = ev.plano;
+  return svgCanvas(svgPlano(ev, {raster:true}), 1600, P.fondo ? {src:P.fondo, x:X(0), y:X(0), w:P.ancho * S, h:P.largo * S} : null);
+}
+const toBlob = c => new Promise(ok => c.toBlob(ok, 'image/png'));
+const slug = s => (s || 'evento').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w]+/g, '_').replace(/^_|_$/g, '');
+
+async function buildPDF(ev) {
+  const {jsPDF} = window.jspdf, d = new jsPDF({unit:'pt', format:'a4'});
+  const PW = 595.28, PH = 841.89, M = 36, BOT = PH - 56;
+  const K = {dark:[26,26,26], lime:[195,209,24], gray:[95,94,90], light:[241,239,232], line:[180,178,169], ambBg:[250,238,218], ambTx:[133,79,11], amb:[239,159,39], white:[255,255,255]};
+  const F = c => d.setFillColor(...c), TC = c => d.setTextColor(...c), DC = c => d.setDrawColor(...c);
+  const font = (w, s) => { d.setFont('helvetica', w); d.setFontSize(s); };
+  const fechaTxt = ev.fecha ? fmtFecha(ev.fecha) : '';
+  let y = 0, sub = '';
+  function header(s) {
+    sub = s; F(K.dark); d.rect(0, 0, PW, 70, 'F'); F(K.lime); d.rect(0, 70, PW, 4, 'F');
+    font('bold', 20); TC(K.lime); d.text('TESORO EVENTOS', M, 38);
+    font('normal', 11); TC(K.white); d.text(`HOJA DE RUTA  ·  ${ev.nombre.toUpperCase()}  ·  ${s}`, M, 56);
+    if (fechaTxt) { font('bold', 12); d.text(fechaTxt, PW - M, 38, {align:'right'}); }
+    y = 108;
+  }
+  function page(s) { d.addPage(); header(s); }
+  function need(h) { if (y + h > BOT) page(sub); }
+  function section(t) { need(40); F(K.lime); d.rect(M, y - 12, 4, 16, 'F'); font('bold', 14); TC(K.dark); d.text(t, M + 10, y); y += 24; }
+  function tag(x, yy, t, s = 10) { font('bold', s); const w = d.getTextWidth(t) + 12; F(K.ambBg); DC(K.amb); d.roundedRect(x, yy - s, w, s + 7, 3, 3, 'FD'); TC(K.ambTx); d.text(t, x + 6, yy); return w; }
+
+  // ---- Página 1: resumen
+  header('RESUMEN');
+  section('El evento');
+  [['Cliente', ev.cliente], ['Lugar', ev.lugar], ['Dirección', ev.direccion], ['Contacto en el lugar', ev.contacto], ['Servicio', ev.servicio]].forEach(([k, v]) => {
+    const lines = v ? (font('bold', 12), d.splitTextToSize(v, PW - M - 170)) : [''];
+    need(lines.length * 15 + 7); font('bold', 12);
+    font('normal', 11); TC(K.gray); d.text(k, M + 10, y);
+    if (v) { font('bold', 12); TC(K.dark); d.text(lines, 170, y); } else tag(170, y, 'A CONFIRMAR');
+    y += lines.length * 15 + 7;
+  });
+  y += 10; section('Cronograma');
+  ev.cronograma.forEach((c, i) => {
+    font('normal', 11); const tw = c.conf ? 260 : PW - M - 180; const lines = d.splitTextToSize(c.texto || '', tw);
+    need(lines.length * 14 + 8); font('normal', 11);
+    if (c.dia && i > 0) { DC(K.line); d.setLineWidth(0.5); d.line(M + 10, y - 14, PW - M, y - 14); }
+    font('bold', 12); TC(K.dark); if (c.dia) d.text(c.dia, M + 10, y);
+    font('bold', 13); if (c.hora) d.text(c.hora, 130, y);
+    font('normal', 11); d.text(lines, 180, y);
+    if (c.conf) { font('normal', 11); tag(180 + Math.min(tw, d.getTextWidth(lines[0] || '')) + 8, y, 'HORARIO A CONFIRMAR', 9); }
+    y += lines.length * 14 + 8;
+  });
+  y += 10; section('Equipo de trabajo');
+  if (ev.armado.length) {
+    need(60); font('bold', 11); TC(K.gray); d.text('ARMADO', M + 10, y); y += 12;
+    let x = M + 10;
+    ev.armado.forEach(n => {
+      font('bold', 12); const w = Math.max(80, d.getTextWidth(n) + 24);
+      if (x + w > PW - M) { x = M + 10; y += 38; need(40); }
+      const resp = ev.responsable && n.trim().toLowerCase() === ev.responsable.trim().toLowerCase();
+      F(resp ? K.dark : K.light); d.roundedRect(x, y, w, 30, 4, 4, 'F');
+      TC(resp ? K.lime : K.dark); d.text(n, x + w / 2, resp ? y + 14 : y + 19, {align:'center'});
+      if (resp) { font('bold', 7); TC(K.white); d.text('RESPONSABLE', x + w / 2, y + 24, {align:'center'}); }
+      x += w + 8;
+    });
+    y += 52;
+  }
+  if (ev.durante.length) {
+    need(40); font('bold', 11); TC(K.gray); d.text('DURANTE EL EVENTO', M + 10, y); y += 20;
+    ev.durante.forEach(p => { need(20); font('bold', 12); TC(K.dark); d.text(p.nombre || '', M + 10, y); font('normal', 11); d.text(p.tarea || '', 130, y); y += 19; });
+  }
+  if (ev.reglas.length) {
+    y += 12; section('Reglas del día');
+    ev.reglas.forEach(r => {
+      font('normal', 11); const lines = d.splitTextToSize(r, PW - M - 70); need(lines.length * 14 + 6); font('normal', 11);
+      F(K.lime); d.circle(M + 14, y - 4, 2.5, 'F'); TC(K.dark); d.text(lines, M + 24, y); y += lines.length * 14 + 6;
+    });
+  }
+
+  // ---- Plano
+  if (ev.plano.items.length) {
+    page('PLANO DE UBICACIÓN'); section('Vista de arriba');
+    const c = await planoCanvas(ev);
+    const maxW = PW - 2 * M, maxH = BOT - y - 4, k = Math.min(maxW / c.width, maxH / c.height);
+    const w = c.width * k, h = c.height * k;
+    d.addImage(c.toDataURL('image/jpeg', 0.9), 'JPEG', (PW - w) / 2, y, w, h);
+  }
+
+  // ---- Planta de luces
+  const fx = allFx(ev);
+  if (fx.length) {
+    page('PLANTA DE LUCES');
+    font('normal', 10); TC(K.gray); d.text('Número = Fixture ID en la consola. Debajo de cada luz: universo.address DMX.', M + 10, y - 6); y += 8;
+    for (let i = 0; i < ev.estructuras.length; i++) {
+      if (!ev.estructuras[i].fx.length) continue;
+      const c = await svgCanvas(svgEstructura(ev, i, true), 1600);
+      const w = PW - 2 * M, h = c.height * w / c.width;
+      if (y + h > BOT) page('PLANTA DE LUCES');
+      d.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', M, y, w, h); y += h + 14;
+    }
+    // Patch
+    const L = libMap(), bad = conflictos(ev), cols = [M + 10, M + 60, M + 170, M + 330, M + 430];
+    const head = () => { font('bold', 9); TC(K.gray); ['Nº', 'EQUIPO', 'ESTRUCTURA', 'DMX (U.ADDR)', 'CANALES'].forEach((t, i) => d.text(t, cols[i], y)); y += 16; };
+    if (y + 80 > BOT) page('PATCH DMX');
+    section('Patch DMX'); head();
+    fx.forEach(({f, e, n}) => {
+      if (y + 16 > BOT) { page('PATCH DMX'); head(); }
+      const l = L[f.lib] || {nombre:'Sin tipo', canales:null};
+      if (n % 2) { F(K.light); d.rect(M + 4, y - 11, PW - 2 * M - 4, 16, 'F'); }
+      font('bold', 10); TC(K.dark); d.text(String(n), cols[0], y);
+      font('normal', 10); d.text(l.nombre, cols[1], y); d.text(d.splitTextToSize(e.nombre, 150)[0], cols[2], y);
+      if (f.a) { if (bad.has(f.id)) TC([198,40,40]); font('bold', 10); d.text(`${f.u || 1}.${pad3(f.a)}`, cols[3], y); TC(K.dark); }
+      else { TC(K.ambTx); font('bold', 10); d.text('A CONFIRMAR', cols[3], y); TC(K.dark); }
+      font('normal', 10); d.text(l.canales ? String(l.canales) : '-', cols[4], y);
+      y += 16;
+    });
+  }
+
+  // ---- Lista de equipos
+  page('LISTA DE EQUIPOS'); section('Marcar al cargar en depósito y al volver');
+  const cx1 = 460, cx2 = 520;
+  font('bold', 9); TC(K.gray); d.text('CANT.', 380, y - 4); d.text('CARGA', cx1 + 7, y - 4, {align:'center'}); d.text('VUELTA', cx2 + 7, y - 4, {align:'center'}); y += 8;
+  const grp = t => { need(46); F(K.dark); d.rect(M + 10, y - 12, PW - 2 * M - 10, 18, 'F'); font('bold', 10); TC(K.lime); d.text(t.toUpperCase(), M + 18, y + 1); y += 24; };
+  const item = (n, c) => {
+    font('normal', 11); const lines = d.splitTextToSize(n || '', 300); need(lines.length * 13 + 9);
+    font('normal', 11); TC(K.dark); d.text(lines, M + 18, y); font('bold', 12); d.text(String(c ?? ''), 380, y);
+    DC(K.dark); d.setLineWidth(0.8); d.rect(cx1, y - 10, 14, 14); d.rect(cx2, y - 10, 14, 14);
+    DC(K.line); d.setLineWidth(0.5); const yy = y + (lines.length - 1) * 13 + 7; d.line(M + 10, yy, PW - M, yy); y = yy + 15;
+  };
+  const Lm = libMap();
+  ev.estructuras.forEach(e => {
+    if (!e.fx.length) return; grp('Iluminación: ' + e.nombre);
+    const cnt = {}; e.fx.forEach(f => cnt[f.lib] = (cnt[f.lib] || 0) + 1);
+    Object.entries(cnt).forEach(([id, k]) => item((Lm[id] || {nombre:'Sin tipo'}).nombre, k));
+  });
+  const groups = []; ev.equipos.forEach(x => { if (x.n && !groups.includes(x.g)) groups.push(x.g); });
+  groups.forEach(g => { grp(g || 'Otros'); ev.equipos.filter(x => x.g === g && x.n).forEach(x => item(x.n, x.c)); });
+  if (ev.checklist.length) {
+    y += 8; section('Checklist del armado');
+    ev.checklist.forEach(t => {
+      font('normal', 11); const lines = d.splitTextToSize(t, PW - M - 90); need(lines.length * 14 + 6); font('normal', 11);
+      DC(K.dark); d.setLineWidth(0.8); d.rect(M + 18, y - 10, 12, 12); TC(K.dark); d.text(lines, M + 38, y); y += lines.length * 14 + 6;
+    });
+  }
+
+  // ---- Pie
+  const N = d.getNumberOfPages(), resp = ev.responsable ? ev.responsable.toUpperCase() : 'A CONFIRMAR';
+  for (let i = 1; i <= N; i++) {
+    d.setPage(i); DC(K.line); d.setLineWidth(0.5); d.line(M, PH - 40, PW - M, PH - 40);
+    font('normal', 9); TC(K.gray);
+    d.text(`Responsable en el lugar: ${resp}${ev.responsable ? `  ·  Ante cualquier duda, primero ${ev.responsable}` : ''}`, M, PH - 28);
+    d.text(`Página ${i} de ${N}`, PW - M, PH - 28, {align:'right'});
+  }
+  return d.output('blob');
+}
+
+let prepared = null;
+async function shareSheet() {
+  const ev = curEv(); save();
+  openSheet(`<h3>Generar y compartir</h3><p class="hint" id="shMsg">Preparando los archivos…</p><div class="stack" id="shBtns"></div>`);
+  try {
+    const base = `${slug(ev.nombre)}${ev.fecha ? '_' + ev.fecha.slice(8, 10) + '-' + ev.fecha.slice(5, 7) : ''}`;
+    const files = {};
+    files.pdf = new File([await buildPDF(ev)], `Hoja_de_ruta_${base}.pdf`, {type:'application/pdf'});
+    if (ev.plano.items.length) files.plano = new File([await toBlob(await planoCanvas(ev))], `Plano_${base}.png`, {type:'image/png'});
+    if (allFx(ev).length) files.planta = new File([await toBlob(await svgCanvas(svgPlantaTodo(ev, true), 1600))], `Planta_de_luces_${base}.png`, {type:'image/png'});
+    prepared = {files, title:`Hoja de ruta ${ev.nombre}`};
+    const p = pendientes(ev);
+    $('#shMsg').innerHTML = p.length ? `Listo. Ojo: quedan ${p.length} pendientes, salen marcados como A CONFIRMAR.` : 'Listo para mandar al grupo.';
+    $('#shBtns').innerHTML = `<button class="btn pri" data-a="share" data-k="todo">Compartir PDF e imágenes</button>
+      <button class="btn" data-a="share" data-k="pdf">Compartir solo el PDF</button>
+      ${files.plano ? '<button class="btn" data-a="share" data-k="plano">Compartir imagen del plano</button>' : ''}
+      ${files.planta ? '<button class="btn" data-a="share" data-k="planta">Compartir imagen de la planta de luces</button>' : ''}
+      <button class="btn" data-a="share" data-k="bajar">Descargar el PDF</button>`;
+  } catch (err) {
+    console.error(err);
+    $('#shMsg').textContent = !window.jspdf ? 'Falta cargar el generador de PDF. Abrí la app una vez con internet y volvé a intentar.' : 'No se pudo generar el PDF: ' + err.message;
+  }
+}
+async function doShare(k) {
+  if (!prepared) return; const F = prepared.files;
+  if (k === 'bajar') return descargar(F.pdf, F.pdf.name);
+  const list = k === 'todo' ? Object.values(F) : [F[k]];
+  if (navigator.canShare && navigator.canShare({files:list})) {
+    try { await navigator.share({files:list, title:prepared.title}); } catch (e) { if (e.name !== 'AbortError') toast('No se pudo compartir: ' + e.message); }
+  } else { list.forEach(f => descargar(f, f.name)); toast('Este navegador no comparte archivos: se descargaron'); }
+}
+function descargar(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+/* ================= Inicio ================= */
+render();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+window.__hr = {DB, cur, buildPDF, A, render};
+</script>
+</body>
+</html>
