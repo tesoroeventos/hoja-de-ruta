@@ -231,7 +231,7 @@ function seed() {
     ],
     actualizado: Date.now()
   };
-  return {version:1, biblioteca, eventos:[tecmaco]};
+  return {version:1, biblioteca, vehiculos:[], eventos:[tecmaco]};
 }
 
 function nuevoEvento() {
@@ -246,11 +246,16 @@ function nuevoEvento() {
     ],
     responsable:'', armado:[], durante:[],
     plano:{ancho:15, largo:20, fondo:null, items:[]},
-    estructuras:[], equipos:[], checklist:[...CHECK_DEF], actualizado:Date.now()
+    vehiculos:[], estructuras:[], equipos:[], checklist:[...CHECK_DEF], actualizado:Date.now()
   };
 }
 
 let DB = (() => { try { const d = JSON.parse(localStorage.getItem(LS)); if (d && Array.isArray(d.eventos)) return d; } catch(e) {} return seed(); })();
+function migrar() {
+  if (!Array.isArray(DB.vehiculos)) DB.vehiculos = [];
+  DB.eventos.forEach(ev => { if (!Array.isArray(ev.vehiculos)) ev.vehiculos = []; });
+}
+migrar();
 let saveT;
 function save() {
   const ev = curEv(); if (ev) ev.actualizado = Date.now();
@@ -260,7 +265,7 @@ function save() {
 function saveSoon() { clearTimeout(saveT); saveT = setTimeout(save, 350); }
 
 /* ================= Estado ================= */
-const cur = {view:'home', evId:null, tab:'datos', sel:null, verPlanta:false};
+const cur = {view:'home', evId:null, tab:'datos', sel:null, verPlanta:false, prev:null};
 const curEv = () => DB.eventos.find(e => e.id === cur.evId);
 const libMap = () => Object.fromEntries(DB.biblioteca.map(l => [l.id, l]));
 
@@ -441,7 +446,6 @@ function render() {
   const top = $('#topbar'), tabs = $('#tabs'), app = $('#app'), bot = $('#bottom');
   if (cur.view === 'home') {
     top.innerHTML = `<div class="brand">Tesoro Eventos<small>Hojas de ruta</small></div>
-      <button class="icon" data-a="goLib" title="Biblioteca de luces" aria-label="Biblioteca de luces">💡</button>
       <button class="icon" data-a="respaldo" title="Respaldo" aria-label="Respaldo">⋯</button>`;
     tabs.innerHTML = '';
     const evs = [...DB.eventos].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
@@ -452,13 +456,18 @@ function render() {
         <div class="m">${fmtFecha(ev.fecha)}${ev.lugar ? ' en ' + esc(ev.lugar) : ''}</div>
         <span class="pill ${p ? 'amb' : 'ok'}">${p ? p + (p === 1 ? ' pendiente' : ' pendientes') : 'Lista para mandar'}</span></button>`;
     }).join('') : `<div class="empty"><b>Todavía no hay hojas de ruta</b>Creá la primera para el próximo evento.</div>`;
+    app.innerHTML += `<h2>Catálogos</h2><p class="hint">Lo que después elegís en cada evento.</p>
+      <div class="grid2">
+        <button class="card evcard" data-a="goLib"><div class="n" style="font-size:19px">Tipos de luces</div><div class="m">${DB.biblioteca.length} cargados</div></button>
+        <button class="card evcard" data-a="goVeh"><div class="n" style="font-size:19px">Vehículos</div><div class="m">${DB.vehiculos.length ? DB.vehiculos.length + ' cargados' : 'Sin cargar'}</div></button>
+      </div>`;
     bot.innerHTML = `<div class="wrap"><button class="btn pri" data-a="newEv">Nueva hoja de ruta</button></div>`;
     return;
   }
   if (cur.view === 'lib') {
-    top.innerHTML = `<button class="icon" data-a="home" aria-label="Volver">‹</button><h1 class="t">Biblioteca de luces</h1>`;
+    top.innerHTML = `<button class="icon" data-a="back" aria-label="Volver">‹</button><h1 class="t">Tipos de luces</h1>`;
     tabs.innerHTML = '';
-    app.innerHTML = `<p class="hint">Los tipos de luces que usan en las plantas. Los canales son opcionales: solo hacen falta para el calculador de address.</p>
+    app.innerHTML = `<p class="hint">Cada modelo de luz que tienen. Después, en la pestaña Luces de cada evento, elegís de esta lista. Los canales son opcionales: solo hacen falta para el calculador de address.</p>
       ${DB.biblioteca.map((l, i) => `<div class="libro">
         <input type="color" value="${l.color}" data-o="lib" data-p="${i}.color" data-r="lib" aria-label="Color">
         <input type="text" value="${esc(l.nombre)}" data-o="lib" data-p="${i}.nombre" placeholder="Nombre">
@@ -466,6 +475,21 @@ function render() {
         <input type="number" value="${l.canales ?? ''}" min="1" max="512" data-o="lib" data-p="${i}.canales" data-num placeholder="Canales" aria-label="Canales">
         <button class="mini" data-a="delLib" data-i="${i}" aria-label="Borrar">✕</button></div>`).join('')}
       <button class="btn sm" data-a="addLib">Agregar tipo de luz</button>`;
+    bot.innerHTML = '';
+    return;
+  }
+  if (cur.view === 'veh') {
+    top.innerHTML = `<button class="icon" data-a="back" aria-label="Volver">‹</button><h1 class="t">Vehículos</h1>`;
+    tabs.innerHTML = '';
+    app.innerHTML = `<p class="hint">Los vehículos que usan para ir a los eventos. Después los asignás en la pestaña Equipo de cada evento, con quién maneja. La patente sale en el PDF, porque en las empresas la suelen pedir para entrar.</p>
+      ${DB.vehiculos.map((v, i) => `<div class="card" style="padding:10px">
+        <div class="grid2">
+          <label class="field"><span>Vehículo</span><input type="text" value="${esc(v.nombre)}" data-o="veh" data-p="${i}.nombre" placeholder="Ej. Sprinter blanca"></label>
+          <label class="field"><span>Patente</span><input type="text" value="${esc(v.patente)}" data-o="veh" data-p="${i}.patente" placeholder="AB 123 CD" style="text-transform:uppercase"></label>
+        </div>
+        <div class="row" style="align-items:flex-end"><label class="field" style="flex:1;margin:0"><span>Notas</span><input type="text" value="${esc(v.notas)}" data-o="veh" data-p="${i}.notas" placeholder="Capacidad, si lleva trailer, etc."></label>
+        <button class="mini" data-a="delVeh" data-i="${i}" style="height:44px">Borrar</button></div></div>`).join('') || '<div class="empty"><b>No hay vehículos cargados</b>Agregá los que usan para ir a los eventos.</div>'}
+      <button class="btn sm" data-a="addVeh">Agregar vehículo</button>`;
     bot.innerHTML = '';
     return;
   }
@@ -524,7 +548,15 @@ function rEquipo(ev, app) {
       <input type="text" data-p="durante.${i}.nombre" value="${esc(d.nombre)}" placeholder="Nombre">
       <input type="text" data-p="durante.${i}.tarea" value="${esc(d.tarea)}" placeholder="Qué hace">
       <button class="mini" data-a="del" data-l="durante" data-i="${i}" aria-label="Borrar">✕</button></div>`).join('')}
-    <button class="btn sm" data-a="addDurante">Agregar persona</button>`;
+    <button class="btn sm" data-a="addDurante">Agregar persona</button>
+    <h2>Vehículos</h2>
+    ${DB.vehiculos.length ? `<p class="hint">Elegí el vehículo y quién maneja.</p>
+      ${ev.vehiculos.map((v, i) => `<div class="people" style="grid-template-columns:1.3fr 1fr auto">
+        <select data-p="vehiculos.${i}.vid" aria-label="Vehículo">${DB.vehiculos.map(x => `<option value="${x.id}" ${x.id === v.vid ? 'selected' : ''}>${esc(x.nombre || 'Sin nombre')}${x.patente ? ' (' + esc(x.patente.toUpperCase()) + ')' : ''}</option>`).join('')}</select>
+        <input type="text" data-p="vehiculos.${i}.chofer" value="${esc(v.chofer)}" placeholder="Quién maneja">
+        <button class="mini" data-a="del" data-l="vehiculos" data-i="${i}" aria-label="Quitar">✕</button></div>`).join('')}
+      <div class="row"><button class="btn sm" data-a="addVehEv">Asignar vehículo</button><button class="btn sm" data-a="goVeh">Editar vehículos</button></div>`
+    : `<p class="hint">Todavía no cargaste vehículos.</p><button class="btn sm" data-a="goVeh">Cargar vehículos</button>`}`;
 }
 
 /* ---- Plano ---- */
@@ -595,7 +627,7 @@ function rLuces(ev, app) {
   const L = libMap(), bad = conflictos(ev); let n = 0;
   const libOpts = sel => DB.biblioteca.map(l => `<option value="${l.id}" ${sel === l.id ? 'selected' : ''}>${esc(l.nombre)}</option>`).join('');
   app.innerHTML = `${bad.size ? `<div class="banner">${bad.size} luces tienen el address superpuesto o fuera del universo. Están marcadas en rojo.</div>` : ''}
-    <p class="hint">El número de cada luz es su Fixture ID para la consola. Tocá una luz para cargar su address.</p>
+    <p class="hint">Elegí el tipo de luz y la cantidad, y tocá Agregar. El número de cada luz es su Fixture ID para la consola; tocala para cargar su address. ¿Falta un modelo? <a href="#" data-a="goLib" style="color:var(--lime)">Agregalo en Tipos de luces</a>.</p>
     ${ev.estructuras.map((e, ei) => `<div class="card">
       <div class="grid2">
         <label class="field"><span>Nombre</span><input type="text" data-p="estructuras.${ei}.nombre" value="${esc(e.nombre)}"></label>
@@ -686,11 +718,12 @@ function rLista(ev, app) {
       const cnt = {}; e.fx.forEach(f => cnt[f.lib] = (cnt[f.lib] || 0) + 1);
       return `<div style="color:var(--tx);font-weight:600;border:0;padding-top:10px">${esc(e.nombre)}</div>` + Object.entries(cnt).map(([id, k]) => `<div><span>${esc((L[id] || {nombre:'Sin tipo'}).nombre)}</span><b>${k}</b></div>`).join('');
     }).join('') : '<div>Todavía no hay luces cargadas.</div>'}</div>
-    <h2>Otros equipos</h2>
-    <p class="hint">Sonido, estructuras, pantalla, control, energía. La cantidad puede ser texto (por ejemplo, 14 m).</p>
+    <h2>Sonido y otros equipos</h2>
+    <p class="hint">Tocá Agregar en el grupo que corresponda (Sonido, Pantalla…) y escribí el equipo: te sugiere los que ya usaste en otros eventos. La cantidad puede ser texto (por ejemplo, 14 m).</p>
+    <datalist id="sugEq">${[...new Set(DB.eventos.flatMap(e => e.equipos.map(x => x.n)).filter(Boolean))].sort().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
     ${groups.map(g => `<div class="ghead"><input type="text" value="${esc(g)}" data-grp="${esc(g)}" aria-label="Nombre del grupo"><button class="mini" data-a="addEq" data-g="${esc(g)}">Agregar</button></div>
       ${ev.equipos.map((x, i) => x.g !== g ? '' : `<div class="irow">
-        <input type="text" data-p="equipos.${i}.n" value="${esc(x.n)}" placeholder="Equipo">
+        <input type="text" data-p="equipos.${i}.n" value="${esc(x.n)}" placeholder="Equipo" list="sugEq">
         <input type="text" data-p="equipos.${i}.c" value="${esc(x.c)}" placeholder="Cant." aria-label="Cantidad">
         <button class="mini" data-a="del" data-l="equipos" data-i="${i}" aria-label="Borrar">✕</button></div>`).join('')}`).join('')}
     <button class="btn sm" data-a="addGrupo" style="margin-top:6px">Agregar grupo</button>
@@ -719,7 +752,7 @@ document.addEventListener('input', e => {
     el.dataset.grp = nv; el.nextElementSibling.dataset.g = nv; saveSoon(); return;
   }
   if (!el.dataset.p) return;
-  const obj = el.dataset.o === 'lib' ? DB.biblioteca : curEv(); if (!obj) return;
+  const obj = el.dataset.o === 'lib' ? DB.biblioteca : el.dataset.o === 'veh' ? DB.vehiculos : curEv(); if (!obj) return;
   let v;
   if (el.type === 'checkbox') v = el.checked;
   else if (el.dataset.lines !== undefined) v = el.value.split('\n').map(s => s.trim()).filter(Boolean);
@@ -739,7 +772,16 @@ document.addEventListener('input', e => {
 /* ================= Acciones ================= */
 const A = {
   home() { save(); cur.view = 'home'; cur.sel = null; closeSheet(); render(); scrollTo(0, 0); },
-  goLib() { cur.view = 'lib'; render(); },
+  goLib(b, e) { if (e) e.preventDefault(); save(); cur.prev = cur.view === 'ev' ? {tab:cur.tab} : null; cur.view = 'lib'; render(); scrollTo(0, 0); },
+  goVeh() { save(); cur.prev = cur.view === 'ev' ? {tab:cur.tab} : null; cur.view = 'veh'; render(); scrollTo(0, 0); },
+  back() { save(); if (cur.prev && curEv()) { cur.view = 'ev'; cur.tab = cur.prev.tab; cur.prev = null; render(); scrollTo(0, 0); } else A.home(); },
+  addVeh() { DB.vehiculos.push({id:uid(), nombre:'', patente:'', notas:''}); save(); render(); },
+  delVeh(b) {
+    const v = DB.vehiculos[+b.dataset.i], usos = DB.eventos.filter(ev => ev.vehiculos.some(x => x.vid === v.id)).length;
+    if (usos && !confirm(`"${v.nombre}" está asignado en ${usos} hoja(s) de ruta. ¿Borrarlo igual?`)) return;
+    DB.vehiculos.splice(+b.dataset.i, 1); DB.eventos.forEach(ev => ev.vehiculos = ev.vehiculos.filter(x => x.vid !== v.id)); save(); render();
+  },
+  addVehEv() { const ev = curEv(), usados = new Set(ev.vehiculos.map(x => x.vid)); const v = DB.vehiculos.find(x => !usados.has(x.id)) || DB.vehiculos[0]; ev.vehiculos.push({vid:v.id, chofer:''}); save(); render(); },
   openEv(b) { cur.view = 'ev'; cur.evId = b.dataset.id; cur.tab = 'datos'; cur.sel = null; render(); scrollTo(0, 0); },
   newEv() { const ev = nuevoEvento(); DB.eventos.push(ev); save(); cur.view = 'ev'; cur.evId = ev.id; cur.tab = 'datos'; render(); },
   tab(b) { save(); cur.tab = b.dataset.t; cur.sel = null; render(); scrollTo(0, 0); },
@@ -792,8 +834,14 @@ const A = {
   calc: calcSheet, runCalc,
   verPlanta() { cur.verPlanta = !cur.verPlanta; const y = scrollY; render(); scrollTo(0, y); },
   // lista
-  addEq(b) { const ev = curEv(), g = b.dataset.g; let at = -1; ev.equipos.forEach((x, i) => { if (x.g === g) at = i; }); ev.equipos.splice(at + 1, 0, {g, n:'', c:''}); save(); const y = scrollY; render(); scrollTo(0, y); },
-  addGrupo() { curEv().equipos.push({g:'Nuevo grupo', n:'', c:''}); save(); render(); },
+  addEq(b) { const ev = curEv(), g = b.dataset.g; let at = -1; ev.equipos.forEach((x, i) => { if (x.g === g) at = i; }); ev.equipos.splice(at + 1, 0, {g, n:'', c:''}); save(); const y = scrollY; render(); scrollTo(0, y);
+    setTimeout(() => { const i = document.querySelector(`[data-p="equipos.${at + 1}.n"]`); if (i) i.focus(); }, 50); },
+  addGrupo() {
+    const ev = curEv(), usados = new Set(ev.equipos.map(x => x.g));
+    const g = ['Sonido', 'Pantalla', 'Estructuras', 'Control y energía', 'DJ', 'Otros'].find(x => !usados.has(x)) || 'Nuevo grupo';
+    ev.equipos.push({g, n:'', c:''}); save(); render();
+    setTimeout(() => { const i = [...document.querySelectorAll('.irow input[list]')].at(-1); if (i) i.focus(); }, 50);
+  },
   // biblioteca
   addLib() { DB.biblioteca.push({id:uid(), nombre:'', sigla:'', color:'#4AA3E0', canales:null}); save(); render(); },
   delLib(b) {
@@ -829,6 +877,8 @@ $('#fileJson').onchange = e => {
     const d = JSON.parse(t); if (!d || !Array.isArray(d.eventos)) throw 0;
     d.eventos.forEach(ev => { const i = DB.eventos.findIndex(x => x.id === ev.id); if (i >= 0) DB.eventos[i] = ev; else DB.eventos.push(ev); });
     (d.biblioteca || []).forEach(l => { if (!DB.biblioteca.some(x => x.id === l.id)) DB.biblioteca.push(l); });
+    (d.vehiculos || []).forEach(v => { if (!DB.vehiculos.some(x => x.id === v.id)) DB.vehiculos.push(v); });
+    migrar();
     save(); closeSheet(); render(); toast(`Respaldo cargado: ${d.eventos.length} hojas de ruta`);
   }).catch(() => toast('Ese archivo no es un respaldo de hojas de ruta'));
 };
@@ -910,6 +960,18 @@ async function buildPDF(ev) {
   if (ev.durante.length) {
     need(40); font('bold', 11); TC(K.gray); d.text('DURANTE EL EVENTO', M + 10, y); y += 20;
     ev.durante.forEach(p => { need(20); font('bold', 12); TC(K.dark); d.text(p.nombre || '', M + 10, y); font('normal', 11); d.text(p.tarea || '', 130, y); y += 19; });
+  }
+  const vehs = ev.vehiculos.map(v => ({...(DB.vehiculos.find(x => x.id === v.vid) || {}), chofer:v.chofer})).filter(v => v.nombre);
+  if (vehs.length) {
+    y += 6; need(40); font('bold', 11); TC(K.gray); d.text('VEHÍCULOS', M + 10, y); y += 20;
+    vehs.forEach(v => {
+      need(20); font('bold', 12); TC(K.dark); d.text(v.nombre, M + 10, y);
+      let x = M + 10 + d.getTextWidth(v.nombre) + 10;
+      if (v.patente) { font('normal', 11); TC(K.gray); d.text(v.patente.toUpperCase(), x, y); x += d.getTextWidth(v.patente.toUpperCase()) + 10; }
+      font('normal', 11); TC(K.dark);
+      if (v.chofer) d.text('Maneja: ' + v.chofer, Math.max(x, 300), y); else tag(Math.max(x, 300), y, 'CHOFER A CONFIRMAR', 9);
+      y += 19;
+    });
   }
   if (ev.reglas.length) {
     y += 12; section('Reglas del día');
