@@ -114,6 +114,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--lime)}
 .step b{min-width:26px;text-align:center;font-size:17px}
 .gtit{font-family:var(--fd);font-weight:700;font-size:16px;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin:16px 0 6px}
 .crow{display:grid;grid-template-columns:1fr 128px auto;gap:6px;margin-bottom:6px}
+
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--ln);font-size:15px}
+.kv>span:first-child{color:var(--mu);flex:none}
+.kv>*:last-child{text-align:right}
+.kv a{color:var(--lime)}
+.crono{display:grid;grid-template-columns:62px 1fr;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--ln)}
+.crono .h{font-family:var(--fd);font-weight:700;font-size:19px}
+.crono .dia{grid-column:1/-1;font-weight:600;color:var(--lime);font-size:14px;margin-top:6px}
+.tagc{display:inline-block;background:#4a3a1c;color:var(--amb);font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:6px}
+.chkrow{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--ln);cursor:pointer}
+.chkrow input{width:24px;height:24px;flex:none;accent-color:var(--lime);margin:0}
+.chkrow small{display:block;color:var(--lime);font-size:12px;margin-top:3px}
+.okbox{background:#39401a;border:1px solid #5b6620;border-radius:12px;padding:14px;color:var(--lime);font-weight:600}
+.okbox small{display:block;color:#c9cf9a;font-weight:400;margin-top:4px}
+.zoomw{overflow-x:auto;border-radius:10px}
+.zoomw.on .paper{width:230%}
+.log{font-size:14px;padding:7px 0;border-bottom:1px dashed var(--ln)}
+.log time{color:var(--mu);font-size:12px;display:block}
+.nov{border-left:3px solid var(--red);padding:8px 10px;background:#2c2224;border-radius:8px;margin-bottom:8px;font-size:14px}
+.nov b{color:#ffb3b5}
+.linkbox{font-size:13px;color:var(--mu);word-break:break-all;background:var(--p2);border-radius:8px;padding:10px;margin:10px 0}
 @media (prefers-reduced-motion:reduce){#sheet{transition:none}}
 </style>
 </head>
@@ -129,6 +150,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--lime)}
 
 <script>
 'use strict';
+/* ================= Servidor =================
+   Pegá acá la URL de la aplicación web de Apps Script (la que termina en /exec).
+   La usa el link que abre el equipo, así que tiene que estar en este archivo. */
+const SERVIDOR = 'https://script.google.com/macros/s/AKfycbzisacAqaEbZOktG3QQttImAW_B-aFBdMOZGxFkCQe769Gjzo0rQLXZZn68NfsbKy21vQ/exec';
+
 /* ================= Datos ================= */
 const LS = 'tesoro_hojaruta_v1';
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -273,11 +299,13 @@ function migrar() {
     if (!x.cid && x.n) { const c = DB.catalogo.find(k => k.n.toLowerCase() === x.n.toLowerCase()); if (c) x.cid = c.id; }
   }));
   if (!Array.isArray(DB.vehiculos)) DB.vehiculos = [];
+  if (!DB.ajustes) DB.ajustes = {quien:'', clave:'', servidor:''};
   DB.eventos.forEach(ev => { if (!Array.isArray(ev.vehiculos)) ev.vehiculos = []; });
 }
 migrar();
 let saveT;
 function save() {
+  if (cur.crew) return;
   const ev = curEv(); if (ev) ev.actualizado = Date.now();
   try { localStorage.setItem(LS, JSON.stringify(DB)); }
   catch(e) { toast('No hay más espacio en el celular para guardar. Quitá la foto de fondo de algún plano.'); }
@@ -285,7 +313,7 @@ function save() {
 function saveSoon() { clearTimeout(saveT); saveT = setTimeout(save, 350); }
 
 /* ================= Estado ================= */
-const cur = {view:'home', evId:null, tab:'datos', sel:null, verPlanta:false, prev:null};
+const cur = {view:'home', evId:null, tab:'datos', sel:null, verPlanta:false, prev:null, crew:false, estados:{}};
 const curEv = () => DB.eventos.find(e => e.id === cur.evId);
 const libMap = () => Object.fromEntries(DB.biblioteca.map(l => [l.id, l]));
 
@@ -324,6 +352,54 @@ function pendientes(ev) {
 }
 const DIAS = ['dom','lun','mar','mié','jue','vie','sáb'];
 function fmtFecha(f) { if (!f) return 'Sin fecha'; const [y,m,d] = f.split('-').map(Number); const dt = new Date(y, m-1, d); return `${DIAS[dt.getDay()]} ${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`; }
+
+/* ================= Link vivo ================= */
+const srv = () => ((DB.ajustes && DB.ajustes.servidor) || SERVIDOR || '').trim();
+async function apiGet(params) { const r = await fetch(srv() + '?' + new URLSearchParams(params)); return r.json(); }
+async function apiPost(body) { const r = await fetch(srv(), {method:'POST', body:JSON.stringify(body)}); return r.json(); }
+const linkDe = ev => location.origin + location.pathname.replace(/index\.html$/, '') + '?h=' + ev.id;
+function snap(ev) { const c = JSON.parse(JSON.stringify(ev)); delete c.pub; delete c.version; delete c.actualizado; return c; }
+function fmtCorta(t) { const m = String(t || '').match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/); return m ? `${m[3]}/${m[2]} ${m[4]}:${m[5]}` : String(t || ''); }
+const horaDe = t => { const m = String(t || '').match(/T(\d{2}:\d{2})/); return m ? m[1] : ''; };
+
+function diffEv(a, b) {
+  const out = [], L = libMap(), v = x => (x === '' || x == null) ? 'sin definir' : x;
+  [['nombre', 'Nombre'], ['fecha', 'Fecha'], ['cliente', 'Cliente'], ['lugar', 'Lugar'], ['direccion', 'Dirección'],
+   ['contacto', 'Contacto en el lugar'], ['servicio', 'Servicio'], ['responsable', 'Responsable']].forEach(([k, n]) => {
+    const f = x => k === 'fecha' && x ? fmtFecha(x) : x;
+    if ((a[k] || '') !== (b[k] || '')) out.push(`${n}: ${v(f(a[k]))} → ${v(f(b[k]))}`);
+  });
+  const cr = c => [c.dia, c.hora || (c.conf ? 'a confirmar' : 'sin hora')].filter(Boolean).join(' ');
+  const ca = a.cronograma || [], cb = b.cronograma || [];
+  const ma = new Map(ca.map(c => [c.texto, c])), mb = new Map(cb.map(c => [c.texto, c]));
+  cb.forEach(c => { const o = ma.get(c.texto);
+    if (!o) out.push(`Horario nuevo: ${c.texto} (${cr(c)})`);
+    else if ((o.dia || '') !== (c.dia || '') || (o.hora || '') !== (c.hora || '') || !!o.conf !== !!c.conf) out.push(`${c.texto}: ${cr(o)} → ${cr(c)}`); });
+  ca.forEach(c => { if (!mb.has(c.texto)) out.push(`Se quitó del cronograma: ${c.texto}`); });
+  const sets = (x, y, mas, menos) => { const X = new Set(x), Y = new Set(y);
+    y.forEach(i => { if (!X.has(i)) out.push(mas + i); }); x.forEach(i => { if (!Y.has(i)) out.push(menos + i); }); };
+  sets(a.armado || [], b.armado || [], 'Se suma al armado: ', 'Sale del armado: ');
+  const du = ev => (ev.durante || []).filter(d => d.nombre).map(d => d.nombre + (d.tarea ? ` (${d.tarea})` : ''));
+  sets(du(a), du(b), 'Durante el evento: ', 'Ya no está durante el evento: ');
+  const vn = ev => (ev.vehiculos || []).map(x => { const k = DB.vehiculos.find(y => y.id === x.vid); return (k ? k.nombre : 'Vehículo') + (x.chofer ? `, maneja ${x.chofer}` : ''); });
+  sets(vn(a), vn(b), 'Vehículo: ', 'Se quitó el vehículo: ');
+  const eq = ev => { const m = new Map(); (ev.equipos || []).forEach(x => { if (x.n) m.set(x.n, String(x.c || '')); }); return m; };
+  const ea = eq(a), eb = eq(b);
+  eb.forEach((c, n) => { if (!ea.has(n)) out.push(`Se agrega a la lista: ${n}${c ? ' x' + c : ''}`); else if (ea.get(n) !== c) out.push(`${n}: ${ea.get(n) || '-'} → ${c || '-'}`); });
+  ea.forEach((c, n) => { if (!eb.has(n)) out.push(`Se quita de la lista: ${n}`); });
+  const lc = ev => { const m = new Map(); (ev.estructuras || []).forEach(e => e.fx.forEach(f => { const k = `${(L[f.lib] || {nombre:'Luz'}).nombre} en ${e.nombre}`; m.set(k, (m.get(k) || 0) + 1); })); return m; };
+  const la = lc(a), lb = lc(b);
+  lb.forEach((n, k) => { if ((la.get(k) || 0) !== n) out.push(`${k}: ${la.get(k) || 0} → ${n}`); });
+  la.forEach((n, k) => { if (!lb.has(k)) out.push(`${k}: ${n} → 0`); });
+  const ad = ev => new Map((ev.estructuras || []).flatMap(e => e.fx.map((f, i) => [f.id, `${e.id}|${i}|${f.u}.${f.a}`])));
+  const aa = ad(a); let na = 0; ad(b).forEach((x, k) => { if (aa.has(k) && aa.get(k) !== x) na++; });
+  if (na) out.push(`Se cambió el orden o el address DMX de ${na} luces`);
+  if (JSON.stringify(a.plano) !== JSON.stringify(b.plano)) out.push('Se modificó el plano');
+  if (JSON.stringify(a.reglas) !== JSON.stringify(b.reglas)) out.push('Se actualizaron las reglas del día');
+  if (JSON.stringify(a.checklist) !== JSON.stringify(b.checklist)) out.push('Se actualizó el checklist del armado');
+  return out;
+}
+const hayCambios = ev => !!ev.pub && diffEv(ev.pub, snap(ev)).length > 0;
 
 /* ================= Plano SVG ================= */
 const S = 40, MG = 3.5;
@@ -463,10 +539,11 @@ function txtOn(hex) {
 
 /* ================= Render ================= */
 function render() {
+  if (cur.crew) return renderCrew();
   const top = $('#topbar'), tabs = $('#tabs'), app = $('#app'), bot = $('#bottom');
   if (cur.view === 'home') {
     top.innerHTML = `<div class="brand">Tesoro Eventos<small>Hojas de ruta</small></div>
-      <button class="icon" data-a="respaldo" title="Respaldo" aria-label="Respaldo">⋯</button>`;
+      <button class="icon" data-a="respaldo" title="Ajustes y respaldo" aria-label="Ajustes y respaldo">⋯</button>`;
     tabs.innerHTML = '';
     const evs = [...DB.eventos].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || b.actualizado - a.actualizado);
     app.innerHTML = evs.length ? evs.map(ev => {
@@ -474,7 +551,8 @@ function render() {
       return `<button class="card evcard" data-a="openEv" data-id="${ev.id}">
         <div class="n">${esc(ev.nombre)}</div>
         <div class="m">${fmtFecha(ev.fecha)}${ev.lugar ? ' en ' + esc(ev.lugar) : ''}</div>
-        <span class="pill ${p ? 'amb' : 'ok'}">${p ? p + (p === 1 ? ' pendiente' : ' pendientes') : 'Lista para mandar'}</span></button>`;
+        <span class="pill ${p ? 'amb' : 'ok'}">${p ? p + (p === 1 ? ' pendiente' : ' pendientes') : 'Completa'}</span>
+        ${ev.pub ? (hayCambios(ev) ? ' <span class="pill amb">Cambios sin publicar</span>' : ' <span class="pill ok">Publicada</span>') : ''}</button>`;
     }).join('') : `<div class="empty"><b>Todavía no hay hojas de ruta</b>Creá la primera para el próximo evento.</div>`;
     app.innerHTML += `<h2>Catálogos</h2><p class="hint">Lo que después elegís en cada evento.</p>
       <div class="grid2">
@@ -531,15 +609,35 @@ function render() {
   top.innerHTML = `<button class="icon" data-a="home" aria-label="Volver">‹</button><h1 class="t">${esc(ev.nombre)}</h1>`;
   const T = [['datos', 'Datos'], ['horarios', 'Horarios'], ['equipo', 'Equipo'], ['plano', 'Plano'], ['luces', 'Luces'], ['lista', 'Lista']];
   tabs.innerHTML = T.map(([k, n]) => `<button class="${cur.tab === k ? 'on' : ''}" data-a="tab" data-t="${k}">${n}</button>`).join('');
-  bot.innerHTML = `<div class="wrap"><button class="btn pri" data-a="compartir">Generar y compartir</button></div>`;
+  bot.innerHTML = `<div class="wrap"><button class="btn" data-a="compartir">PDF</button><button class="btn pri" data-a="publicar">${ev.pub ? (hayCambios(ev) ? 'Publicar cambios' : 'Link del equipo') : 'Publicar link'}</button></div>`;
   ({datos: rDatos, horarios: rHorarios, equipo: rEquipo, plano: rPlano, luces: rLuces, lista: rLista})[cur.tab](ev, app);
 }
 
 const fld = (label, path, val, extra = '') => `<label class="field"><span>${label}</span><input type="text" data-p="${path}" value="${esc(val)}" ${extra}></label>`;
 
+function estadoLugarHtml(ev) {
+  const s = cur.estados[ev.id]; if (!s) return '';
+  if (s.cargando) return '<p class="hint" style="margin:10px 0 0">Consultando el estado…</p>';
+  if (s.error) return `<p class="hint" style="margin:10px 0 0">${esc(s.error)}</p>`;
+  const st = s.estado || {}, hechos = ev.checklist.filter(t => st.checks && st.checks[t]).length;
+  return `<div style="margin-top:12px">
+    ${st.armado ? `<div class="okbox">Armado OK<small>Confirmado por ${esc(st.armado.quien || 'el equipo')} el ${fmtCorta(st.armado.fecha)}</small></div>` : '<div class="kv"><span>Armado</span><b>Sin confirmar</b></div>'}
+    <div class="kv"><span>Checklist</span><b>${hechos} de ${ev.checklist.length}</b></div>
+    ${(s.novedades || []).length ? `<h2 style="font-size:18px">Novedades del equipo</h2>` + s.novedades.map(n => `<div class="nov"><b>${esc(n.tipo || 'Novedad')}</b> · ${esc(n.quien)} · ${fmtCorta(n.fecha)}<div>${esc(n.texto)}</div></div>`).join('') : '<div class="kv"><span>Novedades</span><b>Ninguna</b></div>'}
+  </div>`;
+}
+function pubBoxHtml(ev) {
+  if (!ev.pub) return '';
+  const cambios = hayCambios(ev);
+  return `<div class="card"><div class="row" style="justify-content:space-between"><b>Link del equipo · versión ${ev.version || 1}</b>
+    <span class="pill ${cambios ? 'amb' : 'ok'}" style="margin:0">${cambios ? 'Cambios sin publicar' : 'Al día'}</span></div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-a="copiarLink">Copiar link</button><button class="btn sm" data-a="loadEstado">Actualizar estado</button></div>
+    <div id="estadoLugar">${estadoLugarHtml(ev)}</div></div>`;
+}
 function rDatos(ev, app) {
   const p = pendientes(ev);
-  app.innerHTML = `${p.length ? `<div class="pend"><b>Falta completar</b><ul>${p.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+  if (ev.pub && srv() && DB.ajustes.clave && !cur.estados[ev.id]) setTimeout(() => A.loadEstado(), 0);
+  app.innerHTML = `${pubBoxHtml(ev)}${p.length ? `<div class="pend"><b>Falta completar</b><ul>${p.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
     <h2>El evento</h2>
     ${fld('Nombre del evento', 'nombre', ev.nombre, 'data-r="title"')}
     <label class="field"><span>Fecha del evento</span><input type="date" data-p="fecha" value="${esc(ev.fecha)}"></label>
@@ -811,7 +909,7 @@ document.addEventListener('input', e => {
     el.dataset.grp = nv; el.nextElementSibling.dataset.g = nv; saveSoon(); return;
   }
   if (!el.dataset.p) return;
-  const obj = el.dataset.o === 'lib' ? DB.biblioteca : el.dataset.o === 'veh' ? DB.vehiculos : el.dataset.o === 'cat' ? DB.catalogo : curEv(); if (!obj) return;
+  const obj = el.dataset.o === 'lib' ? DB.biblioteca : el.dataset.o === 'veh' ? DB.vehiculos : el.dataset.o === 'cat' ? DB.catalogo : el.dataset.o === 'aj' ? DB.ajustes : curEv(); if (!obj) return;
   let v;
   if (el.type === 'checkbox') v = el.checked;
   else if (el.dataset.lines !== undefined) v = el.value.split('\n').map(s => s.trim()).filter(Boolean);
@@ -934,15 +1032,96 @@ const A = {
     DB.biblioteca.splice(+b.dataset.i, 1); save(); render();
   },
   respaldo() {
-    openSheet(`<h3>Respaldo</h3><p class="hint">Todo se guarda en este celular. Descargá un respaldo para pasarlo a otro teléfono (por ejemplo, al de Lucas) o no perderlo.</p>
-      <div class="stack"><button class="btn pri" data-a="exportar">Descargar respaldo</button><button class="btn" data-a="importar">Cargar respaldo</button></div>`);
+    const aj = DB.ajustes;
+    openSheet(`<h3>Ajustes</h3>
+      <label class="field"><span>Tu nombre (queda en el registro de cambios)</span><input type="text" data-o="aj" data-p="quien" value="${esc(aj.quien)}" placeholder="Matias"></label>
+      <label class="field"><span>Clave del servidor</span><input type="text" data-o="aj" data-p="clave" value="${esc(aj.clave)}" placeholder="La que muestra setup() en Apps Script" autocomplete="off"></label>
+      <label class="field"><span>URL del servidor${SERVIDOR ? ' (ya está configurada en la app)' : ''}</span><input type="text" data-o="aj" data-p="servidor" value="${esc(aj.servidor)}" placeholder="${esc(SERVIDOR || 'https://script.google.com/macros/s/…/exec')}"></label>
+      <h3 style="margin-top:20px">Respaldo</h3><p class="hint">Las hojas de ruta se editan en este celular. Descargá un respaldo para pasarlas a otro teléfono o no perderlas.</p>
+      <div class="stack"><button class="btn" data-a="exportar">Descargar respaldo</button><button class="btn" data-a="importar">Cargar respaldo</button></div>`);
+  },
+  async publicar() {
+    const ev = curEv(); clearTimeout(saveT); save();
+    if (!srv() || !DB.ajustes.clave) return openSheet(`<h3>Falta conectar el servidor</h3>
+      <p class="hint">El link vivo se guarda en tu Google Sheets. Se configura una sola vez: pegá la URL del servidor y la clave en Ajustes.</p>
+      <button class="btn pri" style="width:100%" data-a="respaldo">Abrir ajustes</button>`);
+    const s = snap(ev), cambios = ev.pub ? diffEv(ev.pub, s) : ['Hoja de ruta publicada'];
+    if (ev.pub && !cambios.length) return linkSheet(ev, []);
+    openSheet(`<h3>Publicando…</h3><p class="hint">Subiendo la hoja de ruta.</p>`);
+    try {
+      const usados = new Set(ev.vehiculos.map(v => v.vid));
+      const res = await apiPost({a:'guardar', k:DB.ajustes.clave, id:ev.id, quien:DB.ajustes.quien || '', cambios,
+        bundle:{ev:s, lib:DB.biblioteca, veh:DB.vehiculos.filter(v => usados.has(v.id))}});
+      if (!res.ok) throw new Error(res.error || 'Error del servidor');
+      ev.pub = s; ev.version = res.version; save(); render(); linkSheet(ev, cambios);
+    } catch (e) {
+      openSheet(`<h3>No se pudo publicar</h3><p class="hint">${esc(e.message)}. Revisá la conexión, la URL y la clave del servidor.</p><button class="btn" style="width:100%" data-a="closeSheet">Cerrar</button>`);
+    }
+  },
+  copiarLink() { const l = linkDe(curEv()); (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject()).then(() => toast('Link copiado'), () => prompt('Copiá el link:', l)); },
+  async mandarCambios() {
+    const ev = curEv(), c = cur.ultCambios || [], l = linkDe(ev), f = ev.fecha ? ` (${fmtFecha(ev.fecha)})` : '';
+    const nuevos = c.filter(x => x !== 'Hoja de ruta publicada');
+    const txt = nuevos.length ? `Cambios en la hoja de ruta de ${ev.nombre}${f}:\n${nuevos.map(x => '• ' + x).join('\n')}\n\nHoja de ruta actualizada: ${l}` : `Hoja de ruta de ${ev.nombre}${f}: ${l}`;
+    if (navigator.share) { try { await navigator.share({text:txt}); } catch (e) {} }
+    else if (navigator.clipboard) { await navigator.clipboard.writeText(txt); toast('Mensaje copiado: pegalo en el grupo'); }
+  },
+  async loadEstado() {
+    const ev = curEv(); if (!ev || !ev.pub) return;
+    cur.estados[ev.id] = {cargando:true}; const b = $('#estadoLugar'); if (b) b.innerHTML = estadoLugarHtml(ev);
+    try { const r = await apiGet({a:'estado', id:ev.id, k:DB.ajustes.clave}); cur.estados[ev.id] = r.ok ? r : {error:r.error}; }
+    catch (e) { cur.estados[ev.id] = {error:'No se pudo consultar el estado (sin conexión)'}; }
+    const b2 = $('#estadoLugar'); if (b2 && curEv() === ev) b2.innerHTML = estadoLugarHtml(ev);
+  },
+  // ---- modo equipo
+  crewLoad() { crewLoad(); },
+  crewZoom(b) { b.closest('section').querySelector('.zoomw').classList.toggle('on'); b.textContent = b.textContent === 'Ampliar' ? 'Achicar' : 'Ampliar'; },
+  crewCheck(b) {
+    const t = b.dataset.t, v = b.checked;
+    pedirQuien(async q => {
+      try { const r = await apiPost({a:'check', id:cur.crewId, item:t, v, quien:q}); if (!r.ok) throw new Error(r.error); cur.crewData.estado = r.estado; }
+      catch (e) { toast('Sin conexión: no se guardó. Probá de nuevo.'); }
+      renderCrew();
+    });
+  },
+  crewArmado(b) {
+    const v = b.dataset.v !== '0';
+    if (v && !confirm('¿Confirmás que el armado está completo y probado?')) return;
+    pedirQuien(async q => {
+      try { const r = await apiPost({a:'armado', id:cur.crewId, v, quien:q}); if (!r.ok) throw new Error(r.error); cur.crewData.estado = r.estado; toast(v ? 'Armado confirmado' : 'Confirmación anulada'); }
+      catch (e) { toast('Sin conexión: no se guardó. Probá de nuevo.'); }
+      renderCrew();
+    });
+  },
+  crewNovedad() {
+    const tipo = $('#nvTipo').value, texto = $('#nvTxt').value.trim();
+    if (!texto) return toast('Escribí qué pasó');
+    pedirQuien(async q => {
+      try {
+        const r = await apiPost({a:'novedad', id:cur.crewId, tipo, texto, quien:q}); if (!r.ok) throw new Error(r.error);
+        cur.crewData.novedades.unshift({tipo, texto, quien:q, fecha:new Date().toISOString().slice(0, 16)}); toast('Novedad enviada'); renderCrew();
+      } catch (e) { toast('Sin conexión: no se envió. Probá de nuevo.'); }
+    });
+  },
+  setQuien(b) {
+    const q = (b.dataset.q || ($('#quienOtro') && $('#quienOtro').value) || '').trim(); if (!q) return toast('Escribí tu nombre');
+    try { localStorage.setItem('hr_quien', q); } catch (e) {}
+    closeSheet(); const f = cur.quienCb; cur.quienCb = null; if (f) f(q);
+  },
+  cambiarQuien() { try { localStorage.removeItem('hr_quien'); } catch (e) {} pedirQuien(() => renderCrew()); },
+  async crewPdf() {
+    toast('Generando PDF…');
+    try {
+      const ev = curEv(), f = new File([await buildPDF(ev)], `Hoja_de_ruta_${slug(ev.nombre)}.pdf`, {type:'application/pdf'});
+      if (navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f]}); else descargar(f, f.name);
+    } catch (e) { if (e.name !== 'AbortError') toast('No se pudo generar el PDF'); }
   },
   exportar() { descargar(new Blob([JSON.stringify(DB)], {type:'application/json'}), `hojas-de-ruta-${new Date().toISOString().slice(0, 10)}.json`); closeSheet(); },
   importar() { $('#fileJson').click(); },
   compartir: shareSheet,
   share(b) { doShare(b.dataset.k); },
 };
-document.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; const f = A[b.dataset.a]; if (f) f(b, e); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; if (b.tagName === 'A') e.preventDefault(); const f = A[b.dataset.a]; if (f) f(b, e); });
 
 $('#fileFoto').onchange = e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
@@ -967,6 +1146,107 @@ $('#fileJson').onchange = e => {
     save(); closeSheet(); render(); toast(`Respaldo cargado: ${d.eventos.length} hojas de ruta`);
   }).catch(() => toast('Ese archivo no es un respaldo de hojas de ruta'));
 };
+
+function linkSheet(ev, cambios) {
+  cur.ultCambios = cambios; const nuevos = cambios.filter(x => x !== 'Hoja de ruta publicada');
+  openSheet(`<h3>${cambios.length ? `Publicada · versión ${ev.version}` : 'Ya está publicada'}</h3>
+    ${nuevos.length ? `<p class="hint" style="margin-bottom:6px">Quedó registrado:</p>${nuevos.map(c => `<div class="log">${esc(c)}</div>`).join('')}`
+      : `<p class="hint">${cambios.length ? 'El equipo ya puede abrir el link.' : 'No hay cambios desde la última publicación.'}</p>`}
+    <div class="linkbox">${esc(linkDe(ev))}</div>
+    <div class="stack">
+      ${nuevos.length ? '<button class="btn pri" data-a="mandarCambios">Avisar los cambios al grupo</button>' : '<button class="btn pri" data-a="mandarCambios">Mandar el link al grupo</button>'}
+      <button class="btn" data-a="copiarLink">Copiar link</button>
+    </div>
+    <p class="hint" style="margin-top:12px">Para el aviso de lunes y miércoles, pegá este link en la columna rider de la agenda.</p>`);
+}
+
+function pedirQuien(cb) {
+  let q = ''; try { q = localStorage.getItem('hr_quien') || ''; } catch (e) {}
+  if (q) return cb(q);
+  cur.quienCb = cb; const ev = curEv();
+  const nombres = [...new Set([ev.responsable, ...(ev.armado || []), ...(ev.durante || []).map(d => d.nombre)].filter(Boolean))];
+  openSheet(`<h3>¿Quién sos?</h3><p class="hint">Queda registrado con tu nombre. Te lo pregunta una sola vez.</p>
+    <div class="stack">${nombres.map(n => `<button class="btn" data-a="setQuien" data-q="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+    <div class="row" style="margin-top:12px"><input type="text" id="quienOtro" placeholder="Otro nombre" style="flex:1"><button class="btn pri" data-a="setQuien">Listo</button></div>`);
+}
+
+async function crewLoad() {
+  const id = cur.crewId, key = 'hr_equipo_' + id; let data = null, offline = false;
+  if (!cur.crewData) $('#app').innerHTML = '<div class="empty"><b>Cargando la hoja de ruta…</b></div>';
+  try {
+    if (!srv()) throw new Error('La app no tiene configurado el servidor');
+    data = await apiGet({a:'ver', id});
+    if (!data.ok) throw new Error(data.error);
+    try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
+  } catch (e) {
+    try { data = JSON.parse(localStorage.getItem(key)); offline = !!data; } catch (_) {}
+    if (!data) { $('#app').innerHTML = `<div class="empty"><b>No se pudo abrir la hoja de ruta</b>${esc(e.message)}. Revisá la conexión y tocá ↻.</div>`; return; }
+  }
+  cur.crewData = data; cur.crewOffline = offline;
+  DB = {biblioteca:data.bundle.lib || [], vehiculos:data.bundle.veh || [], catalogo:[], eventos:[data.bundle.ev], ajustes:{servidor:srv()}};
+  cur.evId = data.bundle.ev.id; renderCrew();
+  if (!offline) toast('Hoja de ruta actualizada');
+}
+
+function renderCrew() {
+  const d = cur.crewData; if (!d) return;
+  const ev = curEv(), st = d.estado || {}, L = libMap(), checks = st.checks || {};
+  $('#topbar').innerHTML = `<div class="brand">Tesoro Eventos<small>Hoja de ruta</small></div><button class="icon" data-a="crewLoad" aria-label="Actualizar">↻</button>`;
+  $('#tabs').innerHTML = ''; $('#bottom').innerHTML = '';
+  const pend = pendientes(ev).filter(x => !/address|superpuesto|Responsable/.test(x));
+  const maps = ev.direccion ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.direccion)}` : '';
+  const tel = ((ev.contacto || '').match(/\+?[\d][\d\s()-]{6,}\d/) || [''])[0].replace(/[^\d+]/g, '');
+  const vehs = (ev.vehiculos || []).map(v => ({...(DB.vehiculos.find(x => x.id === v.vid) || {}), chofer:v.chofer})).filter(v => v.nombre);
+  const cambios = (d.cambios || []).filter(c => c.texto !== 'Hoja de ruta publicada').slice(0, 8);
+  const grupos = []; (ev.equipos || []).forEach(x => { if (x.n && !grupos.includes(x.g)) grupos.push(x.g); }); grupos.sort((a, b) => catIdx(a) - catIdx(b));
+  const conf = ' <span class="tagc">A CONFIRMAR</span>';
+  let quien = ''; try { quien = localStorage.getItem('hr_quien') || ''; } catch (e) {}
+  $('#app').innerHTML = `
+    ${cur.crewOffline ? '<div class="pend"><b>Sin conexión.</b> Estás viendo la última versión que se descargó en este celular.</div>' : ''}
+    <div class="card"><div class="evcard"><div class="n">${esc(ev.nombre)}</div><div class="m">${fmtFecha(ev.fecha)}${ev.lugar ? ' · ' + esc(ev.lugar) : ''}</div>
+      <div class="m" style="font-size:12px;margin-top:6px">Versión ${d.version} · actualizada el ${fmtCorta(d.actualizado)}</div></div></div>
+    ${st.armado ? `<div class="okbox" style="margin-bottom:12px">Armado OK<small>Confirmado por ${esc(st.armado.quien)} el ${fmtCorta(st.armado.fecha)}</small></div>` : ''}
+    ${cambios.length ? `<h2>Últimos cambios</h2>${cambios.map(c => `<div class="log"><time>${fmtCorta(c.fecha)}</time>${esc(c.texto)}</div>`).join('')}` : ''}
+    ${pend.length ? `<div class="pend" style="margin-top:14px"><b>Todavía a confirmar</b><ul>${pend.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+    <h2>Dónde</h2>
+    <div class="kv"><span>Lugar</span><b>${esc(ev.lugar) || conf}</b></div>
+    <div class="kv"><span>Dirección</span><span>${ev.direccion ? `<a href="${maps}" target="_blank" rel="noopener">${esc(ev.direccion)}</a>` : conf}</span></div>
+    <div class="kv"><span>Contacto</span><span>${ev.contacto ? (tel ? `<a href="tel:${tel}">${esc(ev.contacto)}</a>` : esc(ev.contacto)) : conf}</span></div>
+    <h2>Cronograma</h2>
+    ${(ev.cronograma || []).map(c => `${c.dia ? `<div class="crono" style="border:0;padding-bottom:0"><div class="dia">${esc(c.dia)}</div></div>` : ''}
+      <div class="crono"><div class="h">${esc(c.hora) || ''}</div><div>${esc(c.texto)}${c.conf ? conf : ''}</div></div>`).join('')}
+    <h2>Equipo</h2>
+    <div class="kv"><span>Responsable</span><b>${esc(ev.responsable) || conf}</b></div>
+    ${(ev.armado || []).length ? `<div class="kv"><span>Armado</span><span>${esc(ev.armado.join(', '))}</span></div>` : ''}
+    ${(ev.durante || []).filter(x => x.nombre).map(x => `<div class="kv"><span>${esc(x.nombre)}</span><span>${esc(x.tarea)}</span></div>`).join('')}
+    ${vehs.map(v => `<div class="kv"><span>${esc(v.nombre)}${v.patente ? ' · ' + esc(v.patente.toUpperCase()) : ''}</span><span>${v.chofer ? 'Maneja ' + esc(v.chofer) : 'Chofer' + conf}</span></div>`).join('')}
+    ${(ev.plano.items || []).length ? `<section><div class="row" style="justify-content:space-between;align-items:baseline"><h2>Plano</h2><button class="mini" data-a="crewZoom">Ampliar</button></div>
+      <div class="zoomw"><div class="paper">${svgPlano(ev)}</div></div></section>` : ''}
+    ${allFx(ev).length ? `<section><div class="row" style="justify-content:space-between;align-items:baseline"><h2>Planta de luces</h2><button class="mini" data-a="crewZoom">Ampliar</button></div>
+      <div class="zoomw"><div class="paper">${svgPlantaTodo(ev)}</div></div></section>` : ''}
+    <h2>Qué llevar</h2>
+    <div class="auto">
+      ${(ev.estructuras || []).map(e => { const cnt = {}; e.fx.forEach(f => cnt[f.lib] = (cnt[f.lib] || 0) + 1);
+        return `<div style="color:var(--tx);font-weight:600;border:0;padding-top:10px">Iluminación: ${esc(e.nombre)}</div>` + Object.entries(cnt).map(([id, k]) => `<div><span>${esc((L[id] || {nombre:'Luz'}).nombre)}</span><b>${k}</b></div>`).join(''); }).join('')}
+      ${grupos.map(g => `<div style="color:var(--tx);font-weight:600;border:0;padding-top:10px">${esc(g)}</div>` + ev.equipos.filter(x => x.g === g && x.n).map(x => `<div><span>${esc(x.n)}</span><b>${esc(x.c)}</b></div>`).join('')).join('')}
+    </div>
+    ${(ev.reglas || []).length ? `<h2>Reglas del día</h2>${ev.reglas.map(r => `<div class="log">${esc(r)}</div>`).join('')}` : ''}
+    <h2>Checklist del armado</h2>
+    <p class="hint">Marcá cada paso cuando esté hecho. Matias y Lucas lo ven al instante.</p>
+    ${(ev.checklist || []).map(t => `<label class="chkrow"><input type="checkbox" data-a="crewCheck" data-t="${esc(t)}" ${checks[t] ? 'checked' : ''}>
+      <span>${esc(t)}${checks[t] ? `<small>${esc(checks[t].quien)} · ${horaDe(checks[t].fecha)}</small>` : ''}</span></label>`).join('')}
+    <div style="margin:18px 0">${st.armado ? `<button class="btn sm" data-a="crewArmado" data-v="0">Anular la confirmación del armado</button>`
+      : '<button class="btn pri" style="width:100%;padding:16px;font-size:17px" data-a="crewArmado">Confirmar ARMADO OK</button>'}</div>
+    <h2>Novedades</h2>
+    <p class="hint">Roturas, faltantes o cualquier problema. Le llega a Matias y Lucas.</p>
+    <select id="nvTipo" style="margin-bottom:8px"><option>Rotura</option><option>Faltante</option><option>Problema</option><option>Otro</option></select>
+    <textarea id="nvTxt" placeholder="Qué pasó" style="min-height:80px"></textarea>
+    <button class="btn pri" style="width:100%;margin-top:8px" data-a="crewNovedad">Enviar novedad</button>
+    <div style="margin-top:12px">${(d.novedades || []).map(n => `<div class="nov"><b>${esc(n.tipo)}</b> · ${esc(n.quien)} · ${fmtCorta(n.fecha)}<div>${esc(n.texto)}</div></div>`).join('')}</div>
+    <h2>PDF</h2>
+    <button class="btn" style="width:100%" data-a="crewPdf">Descargar la hoja de ruta en PDF</button>
+    <p class="hint" style="margin-top:18px">${quien ? `Estás como ${esc(quien)}. <a href="#" data-a="cambiarQuien" style="color:var(--lime)">Cambiar</a>` : ''}</p>`;
+}
 
 /* ================= Exportar: imágenes y PDF ================= */
 function loadImg(src) { return new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = src; }); }
@@ -1181,9 +1461,11 @@ function descargar(blob, name) {
 }
 
 /* ================= Inicio ================= */
-render();
+const idEquipo = new URLSearchParams(location.search).get('h');
+if (idEquipo) { cur.crew = true; cur.crewId = idEquipo; cur.view = 'crew'; crewLoad(); }
+else render();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
-window.__hr = {DB, cur, buildPDF, A, render};
+window.__hr = {get DB() { return DB; }, cur, buildPDF, A, render, diffEv, snap};
 </script>
 </body>
 </html>
