@@ -355,8 +355,20 @@ function fmtFecha(f) { if (!f) return 'Sin fecha'; const [y,m,d] = f.split('-').
 
 /* ================= Link vivo ================= */
 const srv = () => ((DB.ajustes && DB.ajustes.servidor) || SERVIDOR || '').trim();
-async function apiGet(params) { const r = await fetch(srv() + '?' + new URLSearchParams(params)); return r.json(); }
-async function apiPost(body) { const r = await fetch(srv(), {method:'POST', body:JSON.stringify(body)}); return r.json(); }
+async function api(url, opts = {}, ms = 30000) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+  try {
+    const r = await fetch(url, {...opts, signal:c.signal, cache:'no-store'});
+    const txt = await r.text();
+    try { return JSON.parse(txt); } catch (e) { throw new Error(`El servidor respondió algo inesperado (código ${r.status})`); }
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('El servidor tardó demasiado en responder');
+    if (/load failed|failed to fetch|networkerror/i.test(e.message)) throw new Error('No se pudo conectar con el servidor');
+    throw e;
+  } finally { clearTimeout(t); }
+}
+const apiGet = params => api(srv() + '?' + new URLSearchParams({...params, _:Date.now()}));
+const apiPost = body => api(srv(), {method:'POST', body:JSON.stringify(body)});
 const linkDe = ev => location.origin + location.pathname.replace(/index\.html$/, '') + '?h=' + ev.id;
 function snap(ev) { const c = JSON.parse(JSON.stringify(ev)); delete c.pub; delete c.version; delete c.actualizado; return c; }
 function fmtCorta(t) { const m = String(t || '').match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/); return m ? `${m[3]}/${m[2]} ${m[4]}:${m[5]}` : String(t || ''); }
@@ -1170,22 +1182,35 @@ function pedirQuien(cb) {
     <div class="row" style="margin-top:12px"><input type="text" id="quienOtro" placeholder="Otro nombre" style="flex:1"><button class="btn pri" data-a="setQuien">Listo</button></div>`);
 }
 
+function crewMsg(titulo, detalle, reintentar) {
+  $('#topbar').innerHTML = `<div class="brand">Tesoro Eventos<small>Hoja de ruta</small></div><button class="icon" data-a="crewLoad" aria-label="Actualizar">↻</button>`;
+  $('#tabs').innerHTML = ''; $('#bottom').innerHTML = '';
+  $('#app').innerHTML = `<div class="empty"><b>${esc(titulo)}</b><span id="crewDet">${esc(detalle || '')}</span>${reintentar ? '<div style="margin-top:18px"><button class="btn pri" data-a="crewLoad">Reintentar</button></div>' : ''}</div>`;
+}
 async function crewLoad() {
   const id = cur.crewId, key = 'hr_equipo_' + id; let data = null, offline = false;
-  if (!cur.crewData) $('#app').innerHTML = '<div class="empty"><b>Cargando la hoja de ruta…</b></div>';
+  if (!cur.crewData) crewMsg('Cargando la hoja de ruta…', 'Conectando con el servidor');
+  const lento = setTimeout(() => { const d = $('#crewDet'); if (d) d.textContent = 'El servidor está tardando un poco, esperá unos segundos…'; }, 6000);
   try {
     if (!srv()) throw new Error('La app no tiene configurado el servidor');
-    data = await apiGet({a:'ver', id});
-    if (!data.ok) throw new Error(data.error);
+    const r = await apiGet({a:'ver', id});
+    if (!r || !r.ok) throw new Error((r && r.error) || 'Respuesta vacía del servidor');
+    if (!r.bundle || !r.bundle.ev) throw new Error('La hoja de ruta llegó incompleta');
+    data = r;
     try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
   } catch (e) {
-    try { data = JSON.parse(localStorage.getItem(key)); offline = !!data; } catch (_) {}
-    if (!data) { $('#app').innerHTML = `<div class="empty"><b>No se pudo abrir la hoja de ruta</b>${esc(e.message)}. Revisá la conexión y tocá ↻.</div>`; return; }
+    try { data = JSON.parse(localStorage.getItem(key) || 'null'); offline = !!data; } catch (_) { data = null; }
+    if (!data) { clearTimeout(lento); return crewMsg('No se pudo abrir la hoja de ruta', e.message + '.', true); }
   }
-  cur.crewData = data; cur.crewOffline = offline;
-  DB = {biblioteca:data.bundle.lib || [], vehiculos:data.bundle.veh || [], catalogo:[], eventos:[data.bundle.ev], ajustes:{servidor:srv()}};
-  cur.evId = data.bundle.ev.id; renderCrew();
-  if (!offline) toast('Hoja de ruta actualizada');
+  clearTimeout(lento);
+  try {
+    cur.crewData = data; cur.crewOffline = offline;
+    DB = {biblioteca:data.bundle.lib || [], vehiculos:data.bundle.veh || [], catalogo:[], eventos:[data.bundle.ev], ajustes:{servidor:srv()}};
+    cur.evId = data.bundle.ev.id; renderCrew();
+    if (!offline) toast('Hoja de ruta actualizada');
+  } catch (e) {
+    crewMsg('No se pudo mostrar la hoja de ruta', 'Error: ' + e.message, true);
+  }
 }
 
 function renderCrew() {
@@ -1461,6 +1486,8 @@ function descargar(blob, name) {
 }
 
 /* ================= Inicio ================= */
+window.addEventListener('unhandledrejection', e => { if (cur.crew && !cur.crewData) crewMsg('No se pudo abrir la hoja de ruta', 'Error: ' + ((e.reason && e.reason.message) || e.reason), true); });
+window.addEventListener('error', e => { if (cur.crew && !cur.crewData) crewMsg('No se pudo abrir la hoja de ruta', 'Error: ' + e.message, true); });
 const idEquipo = new URLSearchParams(location.search).get('h');
 if (idEquipo) { cur.crew = true; cur.crewId = idEquipo; cur.view = 'crew'; crewLoad(); }
 else render();
