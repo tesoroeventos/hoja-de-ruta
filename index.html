@@ -358,7 +358,7 @@ const srv = () => ((DB.ajustes && DB.ajustes.servidor) || SERVIDOR || '').trim()
 async function api(url, opts = {}, ms = 30000) {
   const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
   try {
-    const r = await fetch(url, {...opts, signal:c.signal, cache:'no-store'});
+    const r = await fetch(url, {...opts, signal:c.signal, cache:'no-store', credentials:'omit', redirect:'follow'});
     const txt = await r.text();
     try { return JSON.parse(txt); } catch (e) { throw new Error(`El servidor respondió algo inesperado (código ${r.status})`); }
   } catch (e) {
@@ -1199,6 +1199,7 @@ async function crewLoad() {
     data = r;
     try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
   } catch (e) {
+    cur.crewError = e.message;
     try { data = JSON.parse(localStorage.getItem(key) || 'null'); offline = !!data; } catch (_) { data = null; }
     if (!data) { clearTimeout(lento); return crewMsg('No se pudo abrir la hoja de ruta', e.message + '.', true); }
   }
@@ -1227,7 +1228,7 @@ function renderCrew() {
   const conf = ' <span class="tagc">A CONFIRMAR</span>';
   let quien = ''; try { quien = localStorage.getItem('hr_quien') || ''; } catch (e) {}
   $('#app').innerHTML = `
-    ${cur.crewOffline ? '<div class="pend"><b>Sin conexión.</b> Estás viendo la última versión que se descargó en este celular.</div>' : ''}
+    ${cur.crewOffline ? `<div class="pend"><b>No se pudo actualizar.</b> Estás viendo la última versión guardada en este celular.<br><small style="color:#d8d2c4">Motivo: ${esc(cur.crewError || 'desconocido')}</small><div style="margin-top:8px"><button class="btn sm" data-a="crewLoad">Reintentar</button></div></div>` : ''}
     <div class="card"><div class="evcard"><div class="n">${esc(ev.nombre)}</div><div class="m">${fmtFecha(ev.fecha)}${ev.lugar ? ' · ' + esc(ev.lugar) : ''}</div>
       <div class="m" style="font-size:12px;margin-top:6px">Versión ${d.version} · actualizada el ${fmtCorta(d.actualizado)}</div></div></div>
     ${st.armado ? `<div class="okbox" style="margin-bottom:12px">Armado OK<small>Confirmado por ${esc(st.armado.quien)} el ${fmtCorta(st.armado.fecha)}</small></div>` : ''}

@@ -1,4 +1,4 @@
-const CACHE = 'hojaruta-v5';
+const CACHE = 'hojaruta-v6';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
 self.addEventListener('install', e => {
